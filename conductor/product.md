@@ -15,6 +15,11 @@ Zen Ledger is a personal finance management tool designed to provide clarity and
 - Maintain a highly responsive and intuitive user interface.
 
 ## Key Features
+- **Transaction Card (Core):** The central element of the application. It must be comprehensive, extensible, and include all necessary transaction details in a polished, informative layout.
+- **Transaction Input (InputPill):** Uses a configurable version of the `InputPill` component.
+    - **Embedded Variant:** Used within the Transaction Card, optimized for in-place editing (no '+' action button).
+    - **Global Variant:** Used in the bottom bar for quick entry, maintaining its current behavior and look (including the action button).
+- **Embedded Tagging:** Purpose and party tagging features are directly embedded within the `InputPill` component for a seamless entry experience, supporting both inline selection and NLP-driven tagging.
 - **Transaction Stream:** A clear, chronological view of all financial activities.
 - **Wealth Ledger:** A high-level overview of balances and asset distribution.
 - **Categorization & Tagging:** Flexible system for organizing transactions by purpose, category, and party.
