@@ -1,0 +1,752 @@
+{
+  "projects": [
+    {
+      "name": "projects/11037881517402510456",
+      "title": "Modern Editorial POS & Delivery - PRD",
+      "visibility": "PRIVATE",
+      "createTime": "2026-03-13T07:04:33.493831Z",
+      "updateTime": "2026-03-16T00:54:30.489248Z",
+      "projectType": "TEXT_TO_UI_PRO",
+      "thumbnailScreenshot": {
+        "name": "projects/11037881517402510456/files/375481cbae824ca4b837533c09e6d42d",
+        "downloadUrl": "https://lh3.googleusercontent.com/aida/ADBb0ug4Kwy5K-6aV7Q-xua6brGQUYoPD1Eu_JCfOP7o3anSXrJsRXRm3mXJIPeJ0sNsNK51L9fUCTPJcKJtB98FdVHGV0jh-8e1WrIMvO4SzGGduis7UG4YHFnXznPvw5UfZTWrBpxxERFWcLkxT6IsCqcHv78w6wKf0dPUCfDwQbt8YXtmLBtP42g_LSWCnSunwDwfDPADFASRghABztIPmV2Myi5np6_ZLuN-PwcMlihvGjraJL3eqToK-DE"
+      },
+      "origin": "STITCH",
+      "deviceType": "MOBILE",
+      "designTheme": {
+        "colorMode": "LIGHT",
+        "font": "NEWSREADER",
+        "roundness": "ROUND_FOUR",
+        "customColor": "#54ec13",
+        "saturation": 3
+      },
+      "screenInstances": [
+        {
+          "id": "033fc41f61d6401d90de7dbc89a28e4e",
+          "sourceScreen": "projects/11037881517402510456/screens/033fc41f61d6401d90de7dbc89a28e4e",
+          "x": 1394,
+          "y": 624,
+          "width": 390,
+          "height": 884,
+          "hidden": true
+        },
+        {
+          "id": "0873546fb92f41c0bf13d13abfa5c68d",
+          "sourceScreen": "projects/11037881517402510456/screens/0873546fb92f41c0bf13d13abfa5c68d",
+          "x": 1779,
+          "y": -1337,
+          "width": 390,
+          "height": 1112
+        },
+        {
+          "id": "0a6a869eaf2142e6a1a158ed2ef3ed83",
+          "sourceScreen": "projects/11037881517402510456/screens/0a6a869eaf2142e6a1a158ed2ef3ed83",
+          "x": 4304,
+          "y": 40,
+          "width": 390,
+          "height": 884,
+          "hidden": true,
+          "groupId": "d8f7e7febf1a4a8b9581e7652d62fd4b"
+        },
+        {
+          "id": "0eb85c675cd54de7b7d5561ac2b4ff42",
+          "sourceScreen": "projects/11037881517402510456/screens/0eb85c675cd54de7b7d5561ac2b4ff42",
+          "x": 32,
+          "y": 60,
+          "width": 500,
+          "height": 500,
+          "hidden": true,
+          "groupId": "2e2722c47aeb4f8e99a03d49a9e23078"
+        },
+        {
+          "id": "17be8d6010254b6ca2a68aee43b90454",
+          "sourceScreen": "projects/11037881517402510456/screens/17be8d6010254b6ca2a68aee43b90454",
+          "x": 2756,
+          "y": 624,
+          "width": 390,
+          "height": 884,
+          "hidden": true,
+          "groupId": "32130f5a753b4ffd8ecb2f6471f5318f"
+        },
+        {
+          "id": "2cceae9611494c1896a8f29f9ae9e31a",
+          "sourceScreen": "projects/11037881517402510456/screens/2cceae9611494c1896a8f29f9ae9e31a",
+          "y": 2483,
+          "width": 390,
+          "height": 884,
+          "groupId": "32130f5a753b4ffd8ecb2f6471f5318f"
+        },
+        {
+          "id": "2e2722c47aeb4f8e99a03d49a9e23078",
+          "sourceScreen": "projects/11037881517402510456/screens/fake-screen-group-2e2722c47aeb4f8e99a03d49a9e23078",
+          "x": -28,
+          "y": 912,
+          "width": 2270,
+          "height": 2488,
+          "label": "Group",
+          "groupName": "Group"
+        },
+        {
+          "id": "2e2fd1b20c6e4911abca5727d971e6b8",
+          "sourceScreen": "projects/11037881517402510456/screens/2e2fd1b20c6e4911abca5727d971e6b8",
+          "x": 3210,
+          "y": 624,
+          "width": 390,
+          "height": 884,
+          "hidden": true,
+          "groupId": "32130f5a753b4ffd8ecb2f6471f5318f"
+        },
+        {
+          "id": "32130f5a753b4ffd8ecb2f6471f5318f",
+          "sourceScreen": "projects/11037881517402510456/screens/fake-screen-group-32130f5a753b4ffd8ecb2f6471f5318f",
+          "x": 2132,
+          "width": 2270,
+          "height": 1572,
+          "label": "Group",
+          "groupName": "Group"
+        },
+        {
+          "id": "437f0229564d4a15b89ebb69510a6232",
+          "sourceScreen": "projects/11037881517402510456/screens/437f0229564d4a15b89ebb69510a6232",
+          "y": 1692,
+          "width": 390,
+          "height": 884,
+          "groupId": "2e2722c47aeb4f8e99a03d49a9e23078"
+        },
+        {
+          "id": "5c8f13069c4643d2b243b781cada4a4c",
+          "sourceScreen": "projects/11037881517402510456/screens/5c8f13069c4643d2b243b781cada4a4c",
+          "x": 4118,
+          "y": 624,
+          "width": 390,
+          "height": 884,
+          "hidden": true,
+          "groupId": "2e2722c47aeb4f8e99a03d49a9e23078"
+        },
+        {
+          "id": "601f24f2640e46619aa9ce62cd4aa30f",
+          "sourceScreen": "projects/11037881517402510456/screens/601f24f2640e46619aa9ce62cd4aa30f",
+          "x": 521,
+          "y": -1355,
+          "width": 390,
+          "height": 884
+        },
+        {
+          "id": "69405d1e4e7e480caf4b409bcf047bb9",
+          "sourceScreen": "projects/11037881517402510456/screens/69405d1e4e7e480caf4b409bcf047bb9",
+          "x": 1357,
+          "y": -1345,
+          "width": 390,
+          "height": 1179
+        },
+        {
+          "id": "6a8c1e0e540f4a75833b04483f4f1fa9",
+          "sourceScreen": "projects/11037881517402510456/screens/6a8c1e0e540f4a75833b04483f4f1fa9",
+          "x": 800,
+          "y": 1724,
+          "width": 390,
+          "height": 884,
+          "groupId": "2e2722c47aeb4f8e99a03d49a9e23078"
+        },
+        {
+          "id": "6e82ca770d184a79a3fdcb21e9ad98da",
+          "sourceScreen": "projects/11037881517402510456/screens/6e82ca770d184a79a3fdcb21e9ad98da",
+          "x": 73,
+          "y": 415,
+          "width": 500,
+          "height": 500,
+          "hidden": true,
+          "groupId": "d8f7e7febf1a4a8b9581e7652d62fd4b"
+        },
+        {
+          "id": "7c139ae00fec496790600d0f0231eb72",
+          "sourceScreen": "projects/11037881517402510456/screens/7c139ae00fec496790600d0f0231eb72",
+          "x": 2940,
+          "y": 86,
+          "width": 390,
+          "height": 884,
+          "label": "Shop Dashboard",
+          "groupId": "d8f7e7febf1a4a8b9581e7652d62fd4b"
+        },
+        {
+          "id": "7e2bc58ce07b4e3d8969b894f0848063",
+          "sourceScreen": "projects/11037881517402510456/screens/7e2bc58ce07b4e3d8969b894f0848063",
+          "x": 2756,
+          "y": 624,
+          "width": 390,
+          "height": 884,
+          "hidden": true,
+          "groupId": "2e2722c47aeb4f8e99a03d49a9e23078"
+        },
+        {
+          "id": "817ffec43b5b49a1b719a9fc494758ce",
+          "sourceScreen": "projects/11037881517402510456/screens/817ffec43b5b49a1b719a9fc494758ce",
+          "x": 1779,
+          "y": 21,
+          "width": 390,
+          "height": 884
+        },
+        {
+          "id": "8391936361d0455b875589763b13856c",
+          "sourceScreen": "projects/11037881517402510456/screens/8391936361d0455b875589763b13856c",
+          "x": 486,
+          "y": 624,
+          "width": 390,
+          "height": 2754,
+          "hidden": true
+        },
+        {
+          "id": "85c961033ab44e33976193009d4c4f38",
+          "sourceScreen": "projects/11037881517402510456/screens/85c961033ab44e33976193009d4c4f38",
+          "x": 3396,
+          "y": 40,
+          "width": 390,
+          "height": 916,
+          "hidden": true,
+          "groupId": "d8f7e7febf1a4a8b9581e7652d62fd4b"
+        },
+        {
+          "id": "a7b83665280c4f24a57308ef66f843b9",
+          "sourceScreen": "projects/11037881517402510456/screens/a7b83665280c4f24a57308ef66f843b9",
+          "x": 4118,
+          "y": 624,
+          "width": 390,
+          "height": 916,
+          "hidden": true,
+          "groupId": "32130f5a753b4ffd8ecb2f6471f5318f"
+        },
+        {
+          "id": "aa16264ad3d64965b1a92059c4b5bb46",
+          "sourceScreen": "projects/11037881517402510456/screens/aa16264ad3d64965b1a92059c4b5bb46",
+          "x": 1848,
+          "y": 624,
+          "width": 390,
+          "height": 884,
+          "hidden": true
+        },
+        {
+          "id": "abc040c7058d408ab011f1015c572112",
+          "sourceScreen": "projects/11037881517402510456/screens/abc040c7058d408ab011f1015c572112",
+          "x": 32,
+          "y": 60,
+          "width": 500,
+          "height": 500,
+          "hidden": true,
+          "groupId": "32130f5a753b4ffd8ecb2f6471f5318f"
+        },
+        {
+          "id": "aca41ea797294391b49bb48d4ce15f46",
+          "sourceScreen": "projects/11037881517402510456/screens/aca41ea797294391b49bb48d4ce15f46",
+          "x": 5216,
+          "y": 103,
+          "width": 390,
+          "height": 988,
+          "groupId": "d8f7e7febf1a4a8b9581e7652d62fd4b"
+        },
+        {
+          "id": "b86e54dafa944dcebd65d62f44fe4d40",
+          "sourceScreen": "projects/11037881517402510456/screens/b86e54dafa944dcebd65d62f44fe4d40",
+          "x": 2302,
+          "y": 624,
+          "width": 390,
+          "height": 1849,
+          "hidden": true
+        },
+        {
+          "id": "c789894800724c90aec7a5aa49df302e",
+          "sourceScreen": "projects/11037881517402510456/screens/c789894800724c90aec7a5aa49df302e",
+          "x": 5670,
+          "y": 103,
+          "width": 600,
+          "height": 600
+        },
+        {
+          "id": "cce9cab9bc3c4a3795ea7488c429bcdf",
+          "sourceScreen": "projects/11037881517402510456/screens/cce9cab9bc3c4a3795ea7488c429bcdf",
+          "x": 3793,
+          "y": 99,
+          "width": 390,
+          "height": 1169,
+          "groupId": "d8f7e7febf1a4a8b9581e7652d62fd4b"
+        },
+        {
+          "id": "cde16d0caa6343f4896f8f979a1a7229",
+          "sourceScreen": "projects/11037881517402510456/screens/cde16d0caa6343f4896f8f979a1a7229",
+          "x": 3268,
+          "y": -1364,
+          "width": 390,
+          "height": 917
+        },
+        {
+          "id": "d2e9c0bf22e8460d90f53a85c71f4958",
+          "sourceScreen": "projects/11037881517402510456/screens/d2e9c0bf22e8460d90f53a85c71f4958",
+          "x": 2814,
+          "y": -1364,
+          "width": 390,
+          "height": 1065
+        },
+        {
+          "id": "d4a621e839a0416abd357c84cf07c083",
+          "sourceScreen": "projects/11037881517402510456/screens/d4a621e839a0416abd357c84cf07c083",
+          "x": 3664,
+          "y": 624,
+          "width": 390,
+          "height": 884,
+          "hidden": true,
+          "groupId": "2e2722c47aeb4f8e99a03d49a9e23078"
+        },
+        {
+          "id": "d8f7e7febf1a4a8b9581e7652d62fd4b",
+          "sourceScreen": "projects/11037881517402510456/screens/fake-screen-group-d8f7e7febf1a4a8b9581e7652d62fd4b",
+          "x": -2850,
+          "y": -1447,
+          "width": 2270,
+          "height": 1825,
+          "label": "Group",
+          "groupName": "Group"
+        },
+        {
+          "id": "e0294e8ea5f141c7b85508983eb2f9aa",
+          "sourceScreen": "projects/11037881517402510456/screens/e0294e8ea5f141c7b85508983eb2f9aa",
+          "x": 940,
+          "y": 624,
+          "width": 390,
+          "height": 2722,
+          "hidden": true
+        },
+        {
+          "id": "ebdeb916b6794bd9b78ca206f872a48f",
+          "sourceScreen": "projects/11037881517402510456/screens/ebdeb916b6794bd9b78ca206f872a48f",
+          "x": 632,
+          "y": 2483,
+          "width": 390,
+          "height": 884,
+          "groupId": "32130f5a753b4ffd8ecb2f6471f5318f"
+        },
+        {
+          "id": "fd2a8071412841188d8e3ab12de44cd3",
+          "sourceScreen": "projects/11037881517402510456/screens/fd2a8071412841188d8e3ab12de44cd3",
+          "x": 1518,
+          "y": 1604,
+          "width": 390,
+          "height": 884,
+          "groupId": "2e2722c47aeb4f8e99a03d49a9e23078"
+        }
+      ],
+      "metadata": {
+        "userRole": "OWNER"
+      }
+    },
+    {
+      "name": "projects/17502235122378594486",
+      "title": "Zen Ledger - PRD",
+      "visibility": "PRIVATE",
+      "createTime": "2026-02-27T22:41:42.292810Z",
+      "updateTime": "2026-03-11T19:04:09.076140Z",
+      "projectType": "TEXT_TO_UI_PRO",
+      "thumbnailScreenshot": {
+        "name": "projects/17502235122378594486/files/d87610960da840e59c9df7246e9bcff6",
+        "downloadUrl": "https://lh3.googleusercontent.com/aida/ADBb0ujFjwH4b-xcQ0lIVmMMWyR4efhvJCAx5-_GWu4Z7dsUvPXhkegElh-60j3sglk6-8-_C6GSoAkBg8MzU0xyQwt3kemxTUu9YQF6MfP5a_yif-19BjfX2CHXhKW1deeBckKQXSaHdEU8z13qVmLhcikbkdao8OCBEDm3OXHAUX5YIvpb4t5uvwdGJCbyJgEyug3thIWTqjNSWQiLpjUUau-4lmsnAULYH4cHAXANzA_kdd6-6SvLzsRTVbcg"
+      },
+      "origin": "STITCH",
+      "deviceType": "MOBILE",
+      "designTheme": {
+        "colorMode": "LIGHT",
+        "font": "MANROPE",
+        "roundness": "ROUND_FULL",
+        "customColor": "#91bd0f",
+        "saturation": 2
+      },
+      "screenInstances": [
+        {
+          "id": "08ad06c89a7740afba0a1596b578412c",
+          "sourceScreen": "projects/17502235122378594486/screens/fake-screen-group-08ad06c89a7740afba0a1596b578412c",
+          "width": 2270,
+          "height": 1924,
+          "label": "Group",
+          "groupName": "Group"
+        },
+        {
+          "id": "34c390483fce4e828b711ad76a2ea2ff",
+          "sourceScreen": "projects/17502235122378594486/screens/34c390483fce4e828b711ad76a2ea2ff",
+          "x": 974,
+          "y": 760,
+          "width": 390,
+          "height": 1053,
+          "groupId": "8cd6b121a1bb40eb84a348e0ce2774ad"
+        },
+        {
+          "id": "53a678c25d0d4c2ba6d950fede48fde5",
+          "sourceScreen": "projects/17502235122378594486/screens/53a678c25d0d4c2ba6d950fede48fde5",
+          "x": 520,
+          "y": 760,
+          "width": 390,
+          "height": 1551,
+          "groupId": "8cd6b121a1bb40eb84a348e0ce2774ad"
+        },
+        {
+          "id": "53f392bc744f40d09e41eda0eb31cc88",
+          "sourceScreen": "projects/17502235122378594486/screens/53f392bc744f40d09e41eda0eb31cc88",
+          "x": 66,
+          "y": 760,
+          "width": 390,
+          "height": 884,
+          "groupId": "8cd6b121a1bb40eb84a348e0ce2774ad"
+        },
+        {
+          "id": "629165da4a044130a3122474cf7580c8",
+          "sourceScreen": "projects/17502235122378594486/screens/629165da4a044130a3122474cf7580c8",
+          "x": 57,
+          "y": 1142,
+          "width": 396,
+          "height": 492,
+          "groupId": "08ad06c89a7740afba0a1596b578412c"
+        },
+        {
+          "id": "6d410515673a4374b69382b2dee261e2",
+          "sourceScreen": "projects/17502235122378594486/screens/6d410515673a4374b69382b2dee261e2",
+          "x": 57,
+          "y": 1706,
+          "width": 390,
+          "height": 884,
+          "groupId": "08ad06c89a7740afba0a1596b578412c"
+        },
+        {
+          "id": "77ec45dbe86b42b4bb442df019496484",
+          "sourceScreen": "projects/17502235122378594486/screens/77ec45dbe86b42b4bb442df019496484",
+          "x": 1882,
+          "y": 760,
+          "width": 390,
+          "height": 884
+        },
+        {
+          "id": "7e25d80c10f948259946910ac85d5d81",
+          "sourceScreen": "projects/17502235122378594486/screens/7e25d80c10f948259946910ac85d5d81",
+          "x": 511,
+          "y": 1706,
+          "width": 390,
+          "height": 884,
+          "groupId": "08ad06c89a7740afba0a1596b578412c"
+        },
+        {
+          "id": "8cd6b121a1bb40eb84a348e0ce2774ad",
+          "sourceScreen": "projects/17502235122378594486/screens/fake-screen-group-8cd6b121a1bb40eb84a348e0ce2774ad",
+          "x": 10,
+          "y": -847,
+          "width": 1816,
+          "height": 2207,
+          "label": "Group",
+          "groupName": "Group"
+        },
+        {
+          "id": "8f4bf5cc71e646a389d6a53272cea8b1",
+          "sourceScreen": "projects/17502235122378594486/screens/8f4bf5cc71e646a389d6a53272cea8b1",
+          "x": 1419,
+          "y": 1706,
+          "width": 390,
+          "height": 884,
+          "groupId": "08ad06c89a7740afba0a1596b578412c"
+        },
+        {
+          "id": "b7732172152c43c1bf4d676a4bbb043f",
+          "sourceScreen": "projects/17502235122378594486/screens/b7732172152c43c1bf4d676a4bbb043f",
+          "x": 965,
+          "y": 1706,
+          "width": 390,
+          "height": 884,
+          "groupId": "08ad06c89a7740afba0a1596b578412c"
+        },
+        {
+          "id": "c192a1e0dc6742d8b2fbd0e289885580",
+          "sourceScreen": "projects/17502235122378594486/screens/c192a1e0dc6742d8b2fbd0e289885580",
+          "x": 1873,
+          "y": 1706,
+          "width": 390,
+          "height": 1268,
+          "groupId": "08ad06c89a7740afba0a1596b578412c"
+        },
+        {
+          "id": "db17c02a8af0472f919e6da7e2af09c6",
+          "sourceScreen": "projects/17502235122378594486/screens/db17c02a8af0472f919e6da7e2af09c6",
+          "x": 66,
+          "y": 196,
+          "width": 500,
+          "height": 500,
+          "label": "Zen Ledger - PRD",
+          "groupId": "8cd6b121a1bb40eb84a348e0ce2774ad"
+        },
+        {
+          "id": "e976576c199c43a39777ede257b1036a",
+          "sourceScreen": "projects/17502235122378594486/screens/e976576c199c43a39777ede257b1036a",
+          "x": 1428,
+          "y": 760,
+          "width": 390,
+          "height": 884,
+          "groupId": "8cd6b121a1bb40eb84a348e0ce2774ad"
+        }
+      ],
+      "metadata": {
+        "userRole": "OWNER"
+      }
+    },
+    {
+      "name": "projects/785247303641885015",
+      "title": "CEO Live Monitoring Dashboard",
+      "visibility": "PRIVATE",
+      "createTime": "2026-02-11T11:37:44.900659Z",
+      "updateTime": "2026-02-27T13:42:39.531996Z",
+      "projectType": "TEXT_TO_UI_PRO",
+      "thumbnailScreenshot": {
+        "name": "projects/785247303641885015/files/80cedc1184104e159a1c69f65a94c9ce",
+        "downloadUrl": "https://lh3.googleusercontent.com/aida/ADBb0ugJDzpX2j1jEcQRtC5ssrzEg432RonI_UqnnfLL9WtLRIuIOOITLSBVq3sfbfdGBLovydgT2vgVxvYlf14tHyG7Wzr56exbMlHp2p1msEk2SnqR2TBx5C0PDehkF4igTfUBwwcQiwSgBXu1H7fif5zDIV-WT0ym-wpG6HYHbN_9jJzQmmQ52q0M4FCGBmlg-_3SEtIPm0AMwSZH7CDGn-j6L8w6KRKQmEQZxU6BYmT_cawUofQ4OsoA"
+      },
+      "origin": "STITCH",
+      "deviceType": "MOBILE",
+      "designTheme": {
+        "colorMode": "DARK",
+        "font": "INTER",
+        "roundness": "ROUND_EIGHT",
+        "customColor": "#136dec",
+        "saturation": 2
+      },
+      "screenInstances": [
+        {
+          "id": "2a1a08dd613d49f485db36a697469186",
+          "sourceScreen": "projects/785247303641885015/screens/2a1a08dd613d49f485db36a697469186",
+          "x": 454,
+          "y": 1435,
+          "width": 390,
+          "height": 1057
+        },
+        {
+          "id": "3d5f58f2bb54436e869264f97f933016",
+          "sourceScreen": "projects/785247303641885015/screens/3d5f58f2bb54436e869264f97f933016",
+          "x": 1362,
+          "y": 1435,
+          "width": 390,
+          "height": 1039
+        },
+        {
+          "id": "3e78ff2a6aad407ea8d988d90f3c2174",
+          "sourceScreen": "projects/785247303641885015/screens/3e78ff2a6aad407ea8d988d90f3c2174",
+          "y": 1435,
+          "width": 390,
+          "height": 1041
+        },
+        {
+          "id": "7d9f03881ac748d9b96efce000da25a6",
+          "sourceScreen": "projects/785247303641885015/screens/7d9f03881ac748d9b96efce000da25a6",
+          "width": 390,
+          "height": 1179
+        },
+        {
+          "id": "948cfb89a5b94c1bbba4ec0b9f28f63e",
+          "sourceScreen": "projects/785247303641885015/screens/948cfb89a5b94c1bbba4ec0b9f28f63e",
+          "x": 454,
+          "width": 390,
+          "height": 1033
+        },
+        {
+          "id": "b593f5690b6840448b669904fd095980",
+          "sourceScreen": "projects/785247303641885015/screens/b593f5690b6840448b669904fd095980",
+          "x": 908,
+          "y": 1435,
+          "width": 390,
+          "height": 1089
+        }
+      ],
+      "metadata": {
+        "userRole": "OWNER"
+      }
+    },
+    {
+      "name": "projects/10394461855912393632",
+      "title": "Study-Buddy-Stitch",
+      "visibility": "PUBLIC",
+      "createTime": "2026-01-28T10:28:18.224137Z",
+      "updateTime": "2026-02-11T11:35:24.846658Z",
+      "projectType": "TEXT_TO_UI_PRO",
+      "thumbnailScreenshot": {
+        "name": "projects/10394461855912393632/files/c63454eeb7d44134b17e121d6907cf66",
+        "downloadUrl": "https://lh3.googleusercontent.com/aida/ADBb0uhszEsUWBkhQiwhI8w48RmVclvG2h6HNdCmal7m4oKERncCumDqWgdj9OiW5C1g6Tg0JK3IG6ok5jtJ1SK6VQ_374P7lf_Y72b6ESTVj4j7iyBs2p22B91FZRkVEEjSPeFPAO0aUu3NSnPadRvFzWxUxX4t4IGKKWIusKqFn3d3Xw015i3ZE24jmTumLlg94MkgMoSlM7eG2BkiljM_Dcwon6zMFzE1P8eTgqQjfrbx6Q8F8DMFi819bD3X"
+      },
+      "origin": "STITCH",
+      "deviceType": "MOBILE",
+      "designTheme": {
+        "colorMode": "DARK",
+        "font": "PLUS_JAKARTA_SANS",
+        "roundness": "ROUND_FULL",
+        "customColor": "#2b8cee",
+        "saturation": 2
+      },
+      "screenInstances": [
+        {
+          "id": "1aae55a565a649ec91bdbdabe0114a72",
+          "sourceScreen": "projects/10394461855912393632/screens/1aae55a565a649ec91bdbdabe0114a72",
+          "x": 932,
+          "y": 2605,
+          "width": 390,
+          "height": 1130
+        },
+        {
+          "id": "621d031aa9914ae5957c6565e53e4174",
+          "sourceScreen": "projects/10394461855912393632/screens/621d031aa9914ae5957c6565e53e4174",
+          "x": 908,
+          "width": 390,
+          "height": 1083
+        },
+        {
+          "id": "73bb313875624445985659c2a7b357ff",
+          "sourceScreen": "projects/10394461855912393632/screens/73bb313875624445985659c2a7b357ff",
+          "x": 454,
+          "width": 390,
+          "height": 884
+        },
+        {
+          "id": "81aad322bf944cc1b635f7b008b9855a",
+          "sourceScreen": "projects/10394461855912393632/screens/1bedeb5094af4b2692de73f635baf7dc",
+          "x": 454,
+          "y": 2605,
+          "width": 390,
+          "height": 884
+        },
+        {
+          "id": "8808f014eaba41028d106c7a1db87f14",
+          "sourceScreen": "projects/10394461855912393632/screens/8808f014eaba41028d106c7a1db87f14",
+          "width": 390,
+          "height": 1209
+        },
+        {
+          "id": "afd66e56cd1140029c492c5eb3088659",
+          "sourceScreen": "projects/10394461855912393632/screens/afd66e56cd1140029c492c5eb3088659",
+          "y": 2605,
+          "width": 390,
+          "height": 896
+        },
+        {
+          "id": "c1da5747e3ef4f79a86ca9f70d893d37",
+          "sourceScreen": "projects/10394461855912393632/screens/c1da5747e3ef4f79a86ca9f70d893d37",
+          "y": 1465,
+          "width": 390,
+          "height": 884
+        },
+        {
+          "id": "c90170449bc8406db87a432c0f441edd",
+          "sourceScreen": "projects/10394461855912393632/screens/c90170449bc8406db87a432c0f441edd",
+          "x": 454,
+          "y": 1465,
+          "width": 390,
+          "height": 884
+        }
+      ],
+      "metadata": {
+        "userRole": "OWNER"
+      }
+    },
+    {
+      "name": "projects/11676611338882952012",
+      "title": "Buyer Feed",
+      "visibility": "PRIVATE",
+      "createTime": "2026-01-17T11:28:20.642343Z",
+      "updateTime": "2026-01-28T09:55:56.259607Z",
+      "projectType": "TEXT_TO_UI_PRO",
+      "thumbnailScreenshot": {
+        "name": "projects/11676611338882952012/files/ac49450eb04947a49030e3ff7731efe8",
+        "downloadUrl": "https://lh3.googleusercontent.com/aida/ADBb0uhJJWdZS8UKW9lul598FRhH2N3hZ1bLmzSP9zuLVEN67Vzafli9DY-NLuprR6v0uG14PgG-6ubKICLzemh-NVf2jtaQxLq_loqWsJWRSpJ4F_Ka0e2PZlkGRHq-Ob-_w-MGV1M0UXjaKpH2kJneYULrKo30sxIP5rwUoPleijdRPFnz8U9gmUk28cVCG24ibj39P-GRGJOIMaqmPzBtaXdtA_h4AE4qBma-PUG9cgDp2ScZ-FgYI4CgGI8_"
+      },
+      "origin": "STITCH",
+      "deviceType": "MOBILE",
+      "designTheme": {
+        "colorMode": "LIGHT",
+        "font": "INTER",
+        "roundness": "ROUND_EIGHT",
+        "customColor": "#137fec",
+        "saturation": 3
+      },
+      "screenInstances": [
+        {
+          "id": "3bf88c5798b74c7f9999ed37849a0a8a",
+          "sourceScreen": "projects/11676611338882952012/screens/3bf88c5798b74c7f9999ed37849a0a8a",
+          "x": 2270,
+          "width": 390,
+          "height": 1002
+        },
+        {
+          "id": "42a85b25cdce45d8a5bbdef1448d240b",
+          "sourceScreen": "projects/11676611338882952012/screens/42a85b25cdce45d8a5bbdef1448d240b",
+          "x": 454,
+          "width": 390,
+          "height": 884
+        },
+        {
+          "id": "5be710b34dee424caf6d9c4e42d21b11",
+          "sourceScreen": "projects/11676611338882952012/screens/5be710b34dee424caf6d9c4e42d21b11",
+          "x": 1816,
+          "width": 390,
+          "height": 1309
+        },
+        {
+          "id": "62d5d2fbb018437bacba67450bc89a5f",
+          "sourceScreen": "projects/11676611338882952012/screens/62d5d2fbb018437bacba67450bc89a5f",
+          "x": 908,
+          "y": 1634,
+          "width": 390,
+          "height": 999
+        },
+        {
+          "id": "8581d285a8254c9bbe6635b52ffacbd9",
+          "sourceScreen": "projects/11676611338882952012/screens/8581d285a8254c9bbe6635b52ffacbd9",
+          "y": 1634,
+          "width": 390,
+          "height": 1394
+        },
+        {
+          "id": "878f4effdc04486a8288391a38453f7f",
+          "sourceScreen": "projects/11676611338882952012/screens/878f4effdc04486a8288391a38453f7f",
+          "x": 454,
+          "y": 1634,
+          "width": 390,
+          "height": 884
+        },
+        {
+          "id": "cab3a36e604b4104a79d5b8d2f67718d",
+          "sourceScreen": "projects/11676611338882952012/screens/cab3a36e604b4104a79d5b8d2f67718d",
+          "x": 908,
+          "width": 390,
+          "height": 1378
+        },
+        {
+          "id": "d013ecf6364a4da38e675f6175247e77",
+          "sourceScreen": "projects/11676611338882952012/screens/d013ecf6364a4da38e675f6175247e77",
+          "x": 2724,
+          "width": 390,
+          "height": 952
+        },
+        {
+          "id": "d43c8e785d2e4fda9299b76380ac3481",
+          "sourceScreen": "projects/11676611338882952012/screens/d43c8e785d2e4fda9299b76380ac3481",
+          "width": 390,
+          "height": 884
+        },
+        {
+          "id": "d87030ecad7a40f58231786f9579124b",
+          "sourceScreen": "projects/11676611338882952012/screens/d87030ecad7a40f58231786f9579124b",
+          "x": 1362,
+          "width": 390,
+          "height": 884
+        },
+        {
+          "id": "f8aaf454f06441b89e72d80eaac6c6da",
+          "sourceScreen": "projects/11676611338882952012/screens/f8aaf454f06441b89e72d80eaac6c6da",
+          "x": 1362,
+          "y": 1634,
+          "width": 390,
+          "height": 1059
+        }
+      ],
+      "metadata": {
+        "userRole": "OWNER"
+      }
+    }
+  ]
+}

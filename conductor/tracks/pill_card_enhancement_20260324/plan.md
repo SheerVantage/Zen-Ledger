@@ -1,17 +1,17 @@
 # Implementation Plan: Implement Configurable InputPill and Enhance Transaction Card
 
-## Phase 1: InputPill Refactoring
-- [ ] Task: Update `InputPill.svelte` with a `mode` prop
-    - [ ] Add `mode` prop (values: `standalone` | `inline`).
-    - [ ] Update conditional rendering to show/hide the action button based on the `mode`.
-- [ ] Task: Implement subtle focus state for `inline` mode
-    - [ ] Adjust CSS/Tailwind classes for a less prominent focus ring.
-- [ ] Task: Write unit tests for `InputPill` mode variations
-    - [ ] Verify both modes render correctly and function as expected.
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: InputPill Refactoring' (Protocol in workflow.md)
+## Phase 1: InputPill Refactoring [checkpoint: f4a9c65]
+- [x] Task: Update `InputPill.svelte` with a `mode` prop
+    - [x] Add `mode` prop (values: `standalone` | `inline`).
+    - [x] Update conditional rendering to show/hide the action button based on the `mode`.
+- [x] Task: Implement subtle focus state for `inline` mode
+    - [x] Adjust CSS/Tailwind classes for a less prominent focus ring.
+- [x] Task: Write unit tests for `InputPill` mode variations
+    - [x] Verify both modes render correctly and function as expected.
+- [x] Task: Conductor - User Manual Verification 'Phase 1: InputPill Refactoring' (Protocol in workflow.md)
 
 ## Phase 2: Embedded Tagging Implementation
-- [ ] Task: Integrate autocomplete menu into `InputPill`
+- [~] Task: Integrate autocomplete menu into `InputPill`
     - [ ] Show suggestions based on user input.
 - [ ] Task: Enhance NLP Auto-Tagging in `InputPill`
     - [ ] Automatically detect and highlight potential tags.

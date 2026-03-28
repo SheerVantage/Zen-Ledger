@@ -4,5 +4,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [ ] **Track: Implement Configurable InputPill and Enhance Transaction Card**
+- [~] **Track: Implement Configurable InputPill and Enhance Transaction Card**
   *Link: [./tracks/pill_card_enhancement_20260324/](./tracks/pill_card_enhancement_20260324/)*

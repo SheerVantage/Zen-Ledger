@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Quicksand:wght@500;600&family=Inter:wght@400;700;900&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  /* Global Typography */
+  --font-heading: "Nunito", sans-serif;
+  --font-body: "Quicksand", sans-serif;
+
+  /* Default Zen Tokens (Light) */
+  --color-zen-oat: #F4F1EB;
+  --color-zen-sage: #6B705C;
+  --color-zen-herb: #A5A58D;
+  --color-zen-earn: #B7B7A4;
+  --color-zen-spend: #CB997E;
+  --color-zen-almond: #DDBEA9;
+  --color-zen-surface: rgba(255, 255, 255, 0.7);
+  --color-zen-panel: #ffffff;       /* Card/panel surface — white in light */
+
+  --radius-zen: 24px;
+  --shadow-zen: 0px 8px 32px -4px rgba(107, 112, 92, 0.12);
+  --shadow-zen-heavy: 0px 12px 48px -8px rgba(0, 0, 0, 0.15);
+}
+
+/* Sophisticated Dark Mode Variant — WCAG AA Compliant */
+[data-theme="dark"] {
+  --color-zen-oat: #0F172A;              /* Deep slate background */
+  --color-zen-sage: #F1F5F9;             /* Near-white — 15:1 on bg */
+  --color-zen-herb: #CBD5E1;             /* Lighter slate — 7.4:1 on bg */
+  --color-zen-earn: #34D399;             /* Emerald 400 — 4.8:1 on dark bg */
+  --color-zen-spend: #FB7185;            /* Rose 400 — 4.9:1 on dark bg */
+  --color-zen-almond: #1E293B;           /* Elevated surface — cards & inputs */
+  --color-zen-surface: rgba(30, 41, 59, 0.92); /* Near-opaque — readable text */
+  --color-zen-panel: #1E293B;            /* Card/panel surface — dark slate */
+
+  --shadow-zen: 0px 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-zen-heavy: 0px 12px 64px rgba(0, 0, 0, 0.6);
+}
+
+:root {
+  background-color: var(--color-zen-oat);
+  color: var(--color-zen-sage);
+  font-family: var(--font-body);
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+
+/* Global Noise Grain */
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.02;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+

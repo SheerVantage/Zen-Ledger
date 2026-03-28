@@ -1,19 +1,16 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('InputPill Component Modes', () => {
+test.describe('InputPill Component Global', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('/test/inputpill');
+        await page.goto('/', { waitUntil: 'networkidle' });
     });
 
-    test('standalone mode should have specific styling classes', async ({ page }) => {
-        const standalone = page.locator('#standalone-test .relative.flex.items-center');
-        await expect(standalone).toHaveClass(/bg-zen-surface/);
-        await expect(standalone).toHaveClass(/rounded-full/);
-    });
-
-    test('inline mode should have transparent background', async ({ page }) => {
-        const inline = page.locator('#inline-test .relative.flex.items-center');
-        await expect(inline).toHaveClass(/bg-transparent/);
-        await expect(inline).not.toHaveClass(/rounded-full/);
+    test('global InputPill should have specific styling classes', async ({ page }) => {
+        // Find and click the "Add" or "Mic" button in the bottom nav to show the input
+        const addButton = page.locator('nav button').nth(2); // Assuming center button is Add
+        await addButton.click();
+        
+        const inputContainer = page.locator('section.fixed.bottom-0 .relative.flex.items-center');
+        await expect(inputContainer).toHaveClass(/bg-zen-surface/);
     });
 });

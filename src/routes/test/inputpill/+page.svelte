@@ -1,11 +1,20 @@
 <script lang="ts">
     import InputPill from "$lib/components/InputPill.svelte";
+    import { parties } from "$lib/stores/parties";
+    import { purposes } from "$lib/stores/purposes";
+    import { onMount } from "svelte";
     
     let logs = $state<string[]>([]);
     
     function handleInput(text: string, overrides?: any) {
         logs = [...logs, `Input: ${text} | Overrides: ${JSON.stringify(overrides)}`];
     }
+
+    onMount(() => {
+        // Ensure some data exists
+        parties.addParty({ name: "Test Party", emoji: "👤" });
+        purposes.addPurpose({ name: "Test Purpose", emoji: "🏷️", accountType: "expense" });
+    });
 </script>
 
 <div class="p-8 space-y-8">
