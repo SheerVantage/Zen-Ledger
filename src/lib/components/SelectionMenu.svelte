@@ -16,7 +16,7 @@
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div 
-        class="fixed z-[100] bg-zen-sage text-white rounded-lg shadow-xl py-1 px-1 flex gap-1 transform -translate-x-1/2 -translate-y-full"
+        class="fixed z-[100] bg-zen-sage text-zen-on-primary rounded-lg shadow-xl py-1 px-1 flex gap-1 transform -translate-x-1/2 -translate-y-full"
         style="left: {coords.x}px; top: {coords.y}px;"
         transition:fade={{ duration: 150 }}
         onclick={(e) => e.stopPropagation()}

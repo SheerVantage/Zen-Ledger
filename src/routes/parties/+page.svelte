@@ -72,7 +72,7 @@
                     <input id="new-aliases-party" bind:value={newAliases} placeholder="e.g. johnny, doe, shopping..." class="w-full bg-zen-oat/30 border border-zen-herb/10 rounded-lg p-2 text-sm text-zen-sage focus:outline-none focus:ring-2 focus:ring-zen-sage/20" />
                 </div>
             </div>
-            <button onclick={addParty} class="mt-4 w-full bg-zen-sage text-white font-bold py-3 rounded-xl shadow-zen-soft hover:bg-zen-sage/90 transition-all active:scale-95">
+            <button onclick={addParty} class="mt-4 w-full bg-zen-sage text-zen-on-primary font-bold py-3 rounded-xl shadow-zen-soft hover:bg-zen-sage/90 transition-all active:scale-95">
                 Add Party
             </button>
         </section>
@@ -89,7 +89,7 @@
                                 <input bind:value={editName} placeholder="Name" class="w-full bg-zen-oat/30 border border-zen-herb/10 rounded-lg p-2 text-sm" />
                                 <input bind:value={editAliases} placeholder="Aliases (comma separated)" class="w-full bg-zen-oat/30 border border-zen-herb/10 rounded-lg p-2 text-[10px]" />
                                 <div class="flex gap-2">
-                                    <button onclick={saveEdit} class="flex-1 bg-zen-sage text-white text-xs font-bold py-2 rounded-lg">Save</button>
+                                    <button onclick={saveEdit} class="flex-1 bg-zen-sage text-zen-on-primary text-xs font-bold py-2 rounded-lg">Save</button>
                                     <button onclick={() => editingId = ""} class="flex-1 bg-zen-herb/10 text-zen-herb text-xs font-bold py-2 rounded-lg">Cancel</button>
                                 </div>
                             </div>
@@ -103,7 +103,7 @@
                                             {p.aliases.join(", ")}
                                         </p>
                                     {/if}
-                                    <p class="text-xs font-bold {getPartyBalance(p.id) < 0 ? 'text-zen-spend' : 'text-emerald-500'} mt-1">
+                                    <p class="text-xs font-bold {getPartyBalance(p.id) < 0 ? 'text-zen-spend' : 'text-zen-earn'} mt-1">
                                         Net: ${Math.abs(getPartyBalance(p.id)).toFixed(0)}
                                     </p>
                                     <!-- Audit Timestamps -->

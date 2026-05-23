@@ -10,22 +10,25 @@
     import { parties, type Party } from "$lib/stores/parties";
     import { categories } from "$lib/stores/categories";
     import { slide, fade } from "svelte/transition";
+    import { tick } from "svelte";
     import Icon from "$lib/components/Icon.svelte";
     import { formatAmount } from "$lib/utils/formatters";
+    import { highlightedTransactionId } from "$lib/stores/feedback";
+    import { beginTransactionEdit, endTransactionEdit } from "$lib/stores/ui";
 
     let { item } = $props();
 
     let isExpanded = $state(false);
     let isEditing = $state(false);
 
-    // Editing state (local clone of item props)
-    let editNarration = $state(item.narration);
-    let editAmount = $state(item.amount.toString());
-    let editPurposeId = $state(item.purposeId);
-    let editDate = $state(item.date);
-    let editPartyId = $state(item.partyId || "");
+    let editNarration = $state("");
+    let editAmount = $state("");
+    let editPurposeId = $state("");
+    let editDate = $state("");
+    let editPartyId = $state("");
+    let editNarrationEl: HTMLTextAreaElement | null = $state(null);
+    let editSession = $state(0);
 
-    // Sync editing state with prop changes when not actively editing
     $effect(() => {
         if (!isEditing) {
             editNarration = item.narration;
@@ -84,7 +87,6 @@
         }
         showSelectionMenu = false;
     }
-    import SelectionMenu from "$lib/components/SelectionMenu.svelte";
 
     function tagAsPurpose() {
         const existing = $purposes.find(p => p.name.toLowerCase() === selectionText.toLowerCase());
@@ -191,13 +193,66 @@
     }
 
     const humanDate = $derived(formatHumanDate(item.date));
+    const isHighlighted = $derived($highlightedTransactionId === item.id);
+
+    function toggleExpanded() {
+        if (!isEditing) isExpanded = !isExpanded;
+    }
+
+    function handleCardKeydown(e: KeyboardEvent) {
+        if (isEditing) return;
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggleExpanded();
+        }
+    }
+
+    function handleDelete() {
+        if (confirm(`Delete "${item.narration}"? This cannot be undone.`)) {
+            deleteTransaction(item.id);
+        }
+    }
 
     function startEdit() {
+        beginTransactionEdit();
         editNarration = item.narration;
         editAmount = item.amount.toString();
         editPurposeId = item.purposeId;
         editDate = item.date;
+        editPartyId = item.partyId || "";
+        editSession += 1;
+        isExpanded = true;
         isEditing = true;
+    }
+
+    async function handleEditClick(e: MouseEvent) {
+        e.stopPropagation();
+        startEdit();
+        await tick();
+        await tick();
+        focusNarrationField();
+    }
+
+    function stopEdit() {
+        isEditing = false;
+        endTransactionEdit();
+    }
+
+    function focusNarrationField(node?: HTMLTextAreaElement | null) {
+        const el = node ?? editNarrationEl;
+        if (!el) return;
+        el.focus({ preventScroll: true });
+        const len = el.value.length;
+        el.setSelectionRange(len, len);
+    }
+
+    function mountEditNarration(node: HTMLTextAreaElement) {
+        editNarrationEl = node;
+        return {
+            destroy() {
+                if (editNarrationEl === node) editNarrationEl = null;
+            },
+        };
     }
 
     function saveEdit() {
@@ -208,7 +263,7 @@
             date: editDate,
             partyId: editPartyId,
         });
-        isEditing = false;
+        stopEdit();
     }
 
     function handlePurposeChange(e: Event) {
@@ -237,53 +292,51 @@
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div 
-        class="fixed z-[100] bg-zen-sage text-white rounded-lg shadow-xl py-1 px-1 flex gap-1 transform -translate-x-1/2 -translate-y-full"
+        class="fixed z-[100] bg-zen-sage text-zen-on-primary rounded-lg shadow-xl py-1 px-1 flex gap-1 transform -translate-x-1/2 -translate-y-full"
         style="left: {selectionCoords.x}px; top: {selectionCoords.y}px;"
         transition:fade={{ duration: 150 }}
         onclick={(e) => e.stopPropagation()}
     >
         <button 
             onclick={tagAsPurpose}
-            class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 rounded-md transition-colors"
+            class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider hover:bg-zen-on-primary/10 rounded-md transition-colors"
         >
             Tag Purpose
         </button>
-        <div class="w-px bg-white/20 my-1"></div>
+        <div class="w-px bg-zen-on-primary/20 my-1"></div>
         <button 
             onclick={tagAsParty}
-            class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 rounded-md transition-colors"
+            class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider hover:bg-zen-on-primary/10 rounded-md transition-colors"
         >
             Tag Party
         </button>
     </div>
 {/if}
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
+
 <div
-    class="w-full bg-zen-surface backdrop-blur-sm rounded-zen shadow-sm border border-zen-herb/5 mb-3 transition-all duration-300 hover:shadow-zen-soft group overflow-hidden"
-    class:shadow-zen-soft={isExpanded}
-    onclick={() => {
-        if (!isEditing) isExpanded = !isExpanded;
-    }}
+    class="zen-list-card w-full mb-3 transition-all duration-300 group overflow-hidden {isHighlighted ? 'border-zen-sage ring-2 ring-zen-sage/30 zen-card-highlight' : ''}"
+    class:border-zen-hairline-strong={isExpanded}
+    role={isEditing ? undefined : "button"}
+    tabindex={isEditing ? undefined : 0}
+    aria-expanded={isExpanded}
+    aria-label="Transaction: {item.narration}"
+    onclick={toggleExpanded}
+    onkeydown={handleCardKeydown}
 >
     <div class="p-4 space-y-2">
-        <!-- Row 1: Narration (Full Width) -->
+        <!-- Row 1: Narration (select text to tag party/purpose) -->
         <div class="w-full">
-            <h4 
-                class="text-zen-sage font-body font-normal text-sm {isExpanded ? 'whitespace-normal' : 'line-clamp-2'} opacity-90 cursor-text"
-                onmouseup={handleMouseUp}
-                role="heading"
-                aria-level="4"
-            >
-                {item.narration}
-            </h4>
+            <p class="text-zen-sage font-body font-normal text-sm {isExpanded ? 'whitespace-normal' : 'line-clamp-2'} opacity-90">
+                <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+                <span class="cursor-text select-text" onmouseup={handleMouseUp}>{item.narration}</span>
+            </p>
         </div>
 
         <!-- Row 2: Emoji, Purpose, Party, Date, and Amount -->
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3 min-w-0">
-                <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center {isExpense ? 'bg-zen-spend/10 text-zen-spend' : 'bg-emerald-500/10 text-emerald-500'}">
+                <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center {isExpense ? 'bg-zen-spend/10 text-zen-spend' : 'bg-zen-earn/10 text-zen-earn'}">
                     <Icon 
                         name={isExpense ? 'arrow-up-right' : 'arrow-down-left'} 
                         size="18" 
@@ -304,9 +357,9 @@
             <div class="text-right flex-shrink-0">
                 <p
                     class="font-heading font-black text-base {currentPurpose?.accountType === 'expense' || currentPurpose?.accountType === 'repaid' ? 'text-zen-spend' : 
-                            currentPurpose?.accountType === 'earning' || currentPurpose?.accountType === 'recovered' ? 'text-emerald-500' :
-                            currentPurpose?.accountType === 'payable' ? 'text-pink-400' :
-                            currentPurpose?.accountType === 'receivable' ? 'text-blue-400' : 
+                            currentPurpose?.accountType === 'earning' || currentPurpose?.accountType === 'recovered' ? 'text-zen-earn' :
+                            currentPurpose?.accountType === 'payable' ? 'text-zen-spend' :
+                            currentPurpose?.accountType === 'receivable' ? 'text-zen-earn' : 
                             currentPurpose?.accountType === 'prospect' ? 'text-zen-herb opacity-70 italic' : 'text-zen-sage'}"
                 >
                     {item.amount === 0 && isProspect ? 'Plan' : formattedAmount}
@@ -317,12 +370,12 @@
                     </p>
                 {/if}
                 {#if item.status && item.status !== 'completed'}
-                    <span class="inline-block px-1.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest {item.status === 'partial' ? 'bg-amber-500/10 text-amber-500' : 'bg-zen-herb/10 text-zen-herb opacity-60'}">
+                    <span class="inline-block px-1.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest {item.status === 'partial' ? 'bg-zen-almond/30 text-zen-sage' : 'bg-zen-herb/10 text-zen-herb opacity-60'}">
                         {item.status}
                     </span>
                 {/if}
                 {#if item.isPassthrough}
-                    <span class="inline-block px-1.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest bg-pink-500/10 text-pink-500 border border-pink-500/20 ml-1">
+                    <span class="inline-block px-1.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest bg-zen-almond/20 text-zen-herb border border-zen-herb/20 ml-1">
                         Passthrough
                     </span>
                 {/if}
@@ -348,20 +401,25 @@
             class="px-4 pb-4 border-t border-zen-herb/5 mt-1"
         >
             {#if isEditing}
-                <div class="pt-4 space-y-4">
+                <div class="pt-4 space-y-4" onmousedown={(e) => e.stopPropagation()}>
                     <div class="space-y-1">
                         <label
                             for="edit-narration-{item.id}"
                             class="text-zen-herb text-xs font-bold uppercase tracking-wider"
                             >Narration</label
                         >
+                        {#key editSession}
+                        <!-- svelte-ignore a11y_autofocus -->
                         <textarea
                             id="edit-narration-{item.id}"
+                            autofocus
+                            use:mountEditNarration
                             bind:value={editNarration}
                             onmouseup={handleTextareaMouseUp}
                             rows="2"
-                            class="w-full bg-zen-oat/50 border border-zen-herb/20 rounded-lg px-3 py-2 text-zen-sage font-body focus:outline-none focus:ring-2 focus:ring-zen-sage/30 resize-none"
+                            class="w-full bg-zen-input border border-zen-herb/20 rounded-lg px-3 py-2 text-zen-sage font-body focus:outline-none focus:ring-2 focus:ring-zen-sage/50 resize-none"
                         ></textarea>
+                        {/key}
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-1">
@@ -375,7 +433,7 @@
                                 type="number"
                                 step="0.01"
                                 bind:value={editAmount}
-                                class="w-full bg-zen-oat/50 border border-zen-herb/20 rounded-lg px-3 py-2 text-zen-sage font-body focus:outline-none focus:ring-2 focus:ring-zen-sage/30"
+                                class="w-full bg-zen-input border border-zen-herb/20 rounded-lg px-3 py-2 text-zen-sage font-body focus:outline-none focus:ring-2 focus:ring-zen-sage/30"
                             />
                         </div>
                         <div class="space-y-1">
@@ -388,7 +446,7 @@
                                 id="edit-date-{item.id}"
                                 type="date"
                                 bind:value={editDate}
-                                class="w-full bg-zen-oat/50 border border-zen-herb/20 rounded-lg px-3 py-2 text-zen-sage font-body focus:outline-none focus:ring-2 focus:ring-zen-sage/30"
+                                class="w-full bg-zen-input border border-zen-herb/20 rounded-lg px-3 py-2 text-zen-sage font-body focus:outline-none focus:ring-2 focus:ring-zen-sage/30"
                             />
                         </div>
                     </div>
@@ -405,11 +463,11 @@
                                             type="text"
                                             bind:value={newPurposeName}
                                             placeholder="Name..."
-                                            class="w-full bg-zen-oat/50 border border-zen-herb/20 rounded-lg px-3 py-1 text-sm text-zen-sage"
+                                            class="w-full bg-zen-input border border-zen-herb/20 rounded-lg px-3 py-1 text-sm text-zen-sage"
                                         />
                                         <select
                                             bind:value={newPurposeType}
-                                            class="w-full bg-zen-oat/50 border border-zen-herb/20 rounded-lg px-3 py-1 text-xs text-zen-sage"
+                                            class="w-full bg-zen-input border border-zen-herb/20 rounded-lg px-3 py-1 text-xs text-zen-sage"
                                         >
                                             {#each $categories as cat}
                                                 <option value={cat.id}>{cat.emoji} {cat.name}</option>
@@ -424,7 +482,7 @@
                                             >
                                             <button
                                                 onclick={addNewPurpose}
-                                                class="flex-1 text-[10px] py-1 bg-zen-sage text-white rounded"
+                                                class="flex-1 text-[10px] py-1 bg-zen-sage text-zen-on-primary rounded"
                                                 >Add</button
                                             >
                                         </div>
@@ -434,7 +492,7 @@
                                         id="edit-purpose-{item.id}"
                                         value={editPurposeId}
                                         onchange={handlePurposeChange}
-                                        class="w-full bg-zen-oat/50 border border-zen-herb/20 rounded-lg px-3 py-2 text-zen-sage font-body focus:outline-none focus:ring-2 focus:ring-zen-sage/30"
+                                        class="w-full bg-zen-input border border-zen-herb/20 rounded-lg px-3 py-2 text-zen-sage font-body focus:outline-none focus:ring-2 focus:ring-zen-sage/30"
                                     >
                                         {#each $purposes as p}
                                             <option value={p.id}>{p.name}</option>
@@ -452,7 +510,7 @@
                             <select
                                 id="edit-party-{item.id}"
                                 bind:value={editPartyId}
-                                class="w-full bg-zen-oat/50 border border-zen-herb/20 rounded-lg px-3 py-2 text-zen-sage font-body focus:outline-none focus:ring-2 focus:ring-zen-sage/30"
+                                class="w-full bg-zen-input border border-zen-herb/20 rounded-lg px-3 py-2 text-zen-sage font-body focus:outline-none focus:ring-2 focus:ring-zen-sage/30"
                             >
                                 <option value="">None</option>
                                 {#each $parties as p}
@@ -467,7 +525,7 @@
                     <button
                         onclick={(e) => {
                             e.stopPropagation();
-                            isEditing = false;
+                            stopEdit();
                         }}
                         class="flex-1 h-10 border border-zen-herb/20 text-zen-herb font-body font-bold rounded-full transition-all active:scale-95"
                     >
@@ -478,7 +536,7 @@
                             e.stopPropagation();
                             saveEdit();
                         }}
-                        class="flex-1 h-10 bg-zen-sage text-white font-body font-bold rounded-full transition-all active:scale-95 shadow-zen-soft"
+                        class="flex-1 h-10 bg-zen-sage text-zen-on-primary font-body font-bold rounded-full transition-all active:scale-95 shadow-zen-soft"
                     >
                         Save
                     </button>
@@ -529,7 +587,7 @@
                                 settleTransaction(item.id);
                                 isExpanded = false;
                             }}
-                            class="w-full h-10 bg-emerald-500/10 text-emerald-600 font-body font-bold rounded-full transition-all active:scale-95 flex items-center justify-center gap-2"
+                            class="w-full h-10 bg-zen-earn/10 text-zen-sage font-body font-bold rounded-full transition-all active:scale-95 flex items-center justify-center gap-2"
                         >
                             <span>↩</span> Settle / Recover
                         </button>
@@ -546,7 +604,7 @@
                                 });
                                 isExpanded = false;
                             }}
-                            class="w-full h-10 bg-zen-sage text-white font-body font-bold rounded-full transition-all active:scale-95 flex items-center justify-center gap-2 shadow-zen-soft"
+                            class="w-full h-10 bg-zen-sage text-zen-on-primary font-body font-bold rounded-full transition-all active:scale-95 flex items-center justify-center gap-2 shadow-zen-soft"
                         >
                             <span>🚀</span> Confirm & Promote
                         </button>
@@ -556,10 +614,8 @@
                     {/if}
                     <div class="flex space-x-3">
                         <button
-                            onclick={(e) => {
-                                e.stopPropagation();
-                                startEdit();
-                            }}
+                            type="button"
+                            onclick={handleEditClick}
                             class="flex-1 h-10 bg-zen-almond/20 text-zen-sage font-body font-bold rounded-full transition-all active:scale-95"
                         >
                             Edit
@@ -567,7 +623,7 @@
                         <button
                             onclick={(e) => {
                                 e.stopPropagation();
-                                deleteTransaction(item.id);
+                                handleDelete();
                             }}
                             class="flex-1 h-10 bg-zen-spend/10 text-zen-spend font-body font-bold rounded-full transition-all active:scale-95"
                         >
@@ -579,3 +635,13 @@
         </div>
     {/if}
 </div>
+
+<style>
+    @keyframes zen-card-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.01); }
+    }
+    :global(.zen-card-highlight) {
+        animation: zen-card-pulse 0.6s ease-out 2;
+    }
+</style>

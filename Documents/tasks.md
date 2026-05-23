@@ -1,67 +1,71 @@
 # Zen Ledger - Implementation Tasks
 
+> Last synced: **2026-05-22** (v2.0.0) — see [STATUS.md](./STATUS.md)
+
 ## 1. Project Initialization
-- [x] Initialize SvelteKit project (Svelte 5 + Vite).
-- [x] Install and configure Tailwind CSS (v4).
-- [x] Set up theme configuration with design tokens.
-- [x] Create folder structure: `src/lib/components`, `src/lib/stores`, `src/lib/utils`.
-- [x] Implement global noise grain texture overlay.
+- [x] SvelteKit (Svelte 5 + Vite), Tailwind v4, design tokens
+- [x] Folder structure, noise overlay, custom favicon
 
-## 2. Core Components (Svelte)
-- [x] `InputPill.svelte`: Text/Voice input UI + focus states + Autocomplete (@/#).
-- [x] `StatusRing.svelte`: Semi-complete donut chart with CSS gradients.
-- [x] `TransactionCard.svelte`: Basic layout for stream entries.
-- [x] `Navigation.svelte`: Bottom navigation bar (Pulse, Stream, Insight, Settings).
-- [x] `Layout.svelte`: Global layout with shared transitions (View Transitions API).
-- [x] `Icon.svelte`: Unified SVG icon component.
+## 2. Core Components
+- [x] `InputPill.svelte` — autocomplete, extras, **autoFocusOnMount**, `data-testid="capture-input"`
+- [x] `StatusRing.svelte`, `TransactionCard.svelte`, `Icon.svelte`
+- [x] `CaptureReviewSheet.svelte` — smart gate review UI
+- [x] `Toast.svelte`, `WealthLedger.svelte`, `AccrualModal.svelte`
+- [x] `SelectionMenu`, `AutocompleteMenu`
+- [x] ~~`PurposeManager`~~, ~~`ParserModal`~~ — moved to `trashed/code/components/`
+- [x] Navigation: bottom bar + mobile right drawer
 
-## 3. Data & State Management
-- [x] Define `Transaction`, `Purpose`, `Party`, `Category` interfaces.
-- [x] Implement `transactions.ts`, `purposes.ts`, `parties.ts`, `categories.ts` stores.
-- [x] Mock initial data set for development.
-- [x] Implement persistence (LocalStorage).
-- [x] Centralized `settings.ts` for profile and financial recalculations.
+## 3. Data & State
+- [x] Stores: transactions, purposes, parties, categories, settings, recurring, ui, feedback
+- [x] localStorage persistence
+- [x] `ui.ts`: theme, `isCaptureInputVisible`, `isEditingTransaction`, capture open/close helpers
 
-## 4. Feature: The Daily Pulse (Home)
-- [x] Layout implementation (Vertical stack, bottom-weighted).
-- [x] Connect `StatusRing` to transaction data.
-- [x] Implement "Processing" animation in `InputPill`.
-- [x] Add "Safe to spend" logic based on daily budget.
+## 4. Pulse (Home)
+- [x] Distilled layout: hero ring, details expander, recent (3), accruals
+- [x] Greeting + daily status
+- [x] Removed inline InputPill; global FAB only
+- [ ] Processing animation polish (partial)
 
-## 5. Feature: The Stream (Transactions)
-- [x] Implementation of `The Stream` page.
-- [x] Sticky date header logic.
-- [ ] Swipe-to-reveal actions (Currently using Click-to-Expand).
-- [x] Accordion-style expansion for transaction details & editing.
-- [x] Inline Word Selection Tagging (Tag Purpose/Party from narration).
-- [ ] Infinite scroll listener.
+## 5. Stream
+- [x] `/stream` page, sticky headers, filters, search
+- [x] Dynamic toolbar height, flat list cards
+- [x] Expand, edit, delete, settle
+- [ ] Swipe-to-reveal actions
+- [ ] Infinite scroll / virtualization
 
-## 6. Feature: Intelligence & Clarification
-- [x] Basic NLP parser (Rule-based) for component extraction.
-- [x] `ParserModal.svelte`: Bottom sheet clarification UI.
-- [x] Integration: Trigger modal when NLP ambiguity > threshold.
-- [x] Voice integration (UI mockup + simulated processing).
+## 6. Intelligence & Clarification
+- [x] `transactionParser.ts` + `parseMeta`
+- [x] `parseConfidence.ts` (R1–R8)
+- [x] `submitCapture()` / `commitParsedTransaction()`
+- [x] Layout integration + review sheet
+- [x] Playwright: `capture-review.test.ts`
+- [ ] Voice (Web Speech API)
 
-## 7. Feature: The Insight (Analysis)
-- [x] Implementation of "Stories" swiping interface.
-- [x] Data aggregation logic for monthly summaries.
-- [ ] Friendly narrative generator (Currently using static templates).
-- [x] `WealthLedger.svelte`: Comprehensive asset/liability overview.
+## 7. Insight
+- [x] Story cards UI, WealthLedger
+- [ ] Dynamic narratives, empty states
 
-## 8. Feature: Management & Settings (New)
-- [x] `Purposes` Management page: Create/Edit account types (Receivables, Payables, etc.).
-- [x] `Parties` Management page: Create/Edit contacts and entities.
-- [x] `Categories` Management: Dynamic account types (Earnings, Expenses, etc.).
-- [x] `Settings`: Profile management (Name, Budget, Currency).
-- [x] Theme Engine: Zen (Light) and Dark mode persistence.
-- [x] Data Portability: Export and Import full application state (JSON).
-- [x] Recurring Transactions: Template-based accrual management.
-- [x] Settlement Logic: One-click settlement for receivables/payables.
+## 8. Settings & Management
+- [x] Purposes, parties, settings, export/import, recurring, settlement
+- [x] Zen + dark theme
 
-## 9. Polishing & Micro-interactions
-- [ ] Implement haptic feedback for mobile actions.
-- [x] Refine all durations/easings to match "Zen" philosophy.
-- [x] Final audit of whitespace and contrast.
-- [ ] Responsive testing (Samsung Tab, iPad, generic Mobile).
-- [ ] Production build optimization and deployment.
+## 9. v2 Transaction Model
+- [x] transfer, prospect, accounts, status, linkedTo, passthrough fields
+- [x] Summary engine (planning, loans, net position)
+- [ ] Prospect promotion (stub)
+- [ ] Auto-settlement prompt
+- [ ] Passthrough pairs
 
+## 10. Polishing & Shell (May 2026)
+- [x] View Transitions API
+- [x] Bottom nav active states, dynamic chrome height
+- [x] Capture feedback: toast, highlight, haptic
+- [x] Capture input auto-focus on FAB open
+- [x] Mobile drawer (right slide)
+- [x] Option A design tokens (hairlines, list cards, micro-labels)
+- [x] 19 Playwright tests passing
+- [ ] Impeccable automated polish (CLI unavailable)
+- [ ] Tablet layouts, production deploy
+
+## 11. Future: SQLite
+- [ ] SQLite-Wasm + OPFS, migration, `.db` export

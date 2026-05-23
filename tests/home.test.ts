@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openGlobalInput } from './helpers';
 
 test.describe('Home Page Interactions (TC-2)', () => {
     test.beforeEach(async ({ page }) => {
@@ -8,31 +9,27 @@ test.describe('Home Page Interactions (TC-2)', () => {
     });
 
     test('should show initial state in StatusRing', async ({ page }) => {
-        const safeToSpend = page.locator('text=Safe to spend');
-        await expect(safeToSpend).toBeVisible();
-        await expect(page.locator('text=$200')).toBeVisible();
+        await expect(page.getByText('Safe to spend')).toBeVisible();
+        await expect(page.getByRole('img', { name: /Safe to spend: ৳2000/i })).toBeVisible();
     });
 
     test('should update balance after adding an expense', async ({ page }) => {
-        const input = page.locator('input[type="text"]');
-        await input.fill('Lunch $50');
+        const input = await openGlobalInput(page);
+        await input.fill('Coffee 50');
         await input.press('Enter');
 
-        // Wait for processing delay (800ms)
-        await page.waitForTimeout(1000);
-
-        // Check for updated balance in StatusRing
-        await expect(page.locator('text=$150')).toBeVisible();
+        await expect(page.getByText('Got it')).toBeVisible({ timeout: 5000 });
+        await expect(page.getByRole('button', { name: /Transaction: Coffee 50/i })).toBeVisible();
     });
 
     test('should toggle theme and update data-theme attribute', async ({ page }) => {
-        const toggleButton = page.locator('button[aria-label="Toggle Theme"]');
-        await expect(page.locator('body')).toHaveAttribute('data-theme', 'zen');
+        const toggleButton = page.getByRole('button', { name: 'Toggle Theme' });
+        await expect(page.locator('html')).toHaveAttribute('data-theme', 'zen');
 
         await toggleButton.click();
-        await expect(page.locator('body')).toHaveAttribute('data-theme', 'swiss');
+        await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
         await toggleButton.click();
-        await expect(page.locator('body')).toHaveAttribute('data-theme', 'zen');
+        await expect(page.locator('html')).toHaveAttribute('data-theme', 'zen');
     });
 });

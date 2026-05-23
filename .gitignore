@@ -1,21 +1,14 @@
 node_modules
 
 # Output
-.output
-.vercel
-.netlify
-.wrangler
 /.svelte-kit
 /build
 /backups
+/trashed
 /node_modules
-/.vscode
 /playwright-report
 /test-results
-
-# OS
-.DS_Store
-Thumbs.db
+mcp-runner.mjs
 
 # Env
 .env

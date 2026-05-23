@@ -1,61 +1,64 @@
 # Zen Ledger - Test Cases
 
-## 1. TC-1: NLP Accuracy Test (Basic)
-| ID | Step | Input | Expected Outcome |
-| :-- | :-- | :-- | :-- |
-| 1.1 | Type transaction | "Coffee $5" | Logged as -$5.00, Category: Food & Drink. |
-| 1.2 | Type income | "Salary $2000" | Logged as +$2000.00, Category: Income. |
-| 1.3 | Missing amount | "Coffee" | Input pill stays open; placeholder: "How much was the coffee?" |
+> Automated coverage: **19 Playwright tests** in `tests/`. Manual cases below.  
+> Status: **2026-05-22** — see [STATUS.md](./STATUS.md).
 
-- **Follow-up**: If amount is missing, ensure focus returns to input.
+## 1. TC-1: NLP & Capture
 
-## 2. TC-2: Home Page (The Daily Pulse)
-| ID | Step | Condition | Expected Outcome |
-| :-- | :-- | :-- | :-- |
-| 2.1 | View Ring | Initial state | Shows "Safe to spend: $200" (or default budget). |
-| 2.2 | Add Expense | -$50 added | Ring progress decreases; balance shows $150. |
-| 2.3 | Theme Toggle | Switch theme | Instant transition to Swiss Grid palette (if implemented). |
+| ID | Step | Input | Expected Outcome | Auto |
+| :-- | :-- | :-- | :-- | :-- |
+| 1.1 | Type expense | "Coffee 5" | Fast save, toast, -5 expense | ✅ `nlp.test.ts` |
+| 1.2 | Type income | "Salary 2000" | Fast save, +2000 | ✅ |
+| 1.3 | Missing context | "50" | Review sheet opens (R1/R3) | ✅ `capture-review.test.ts` |
+| 1.4 | Ambiguity | "apple 20" | Review sheet (R8) | ✅ |
+| 1.5 | Review confirm | "50" → Save | Transaction saved | ✅ |
+| 1.6 | Back to edit | "50" → Back | Capture input restored + focused | ✅ |
 
-- **Follow-up**: Verify CSS variable injection in `:root`.
+## 2. TC-2: Pulse (Home)
 
-## 3. TC-3: The Stream (Transaction List)
+| ID | Step | Condition | Expected Outcome | Auto |
+| :-- | :-- | :-- | :-- | :-- |
+| 2.1 | View Ring | Initial | "Safe to spend" visible | ✅ `home.test.ts` |
+| 2.2 | Add expense | Coffee 50 | Toast, recent card updates | ✅ |
+| 2.3 | Theme toggle | Click theme | `data-theme` zen ↔ dark | ✅ |
+
+## 3. TC-3: Stream
+
+| ID | Step | Action | Expected Outcome | Auto |
+| :-- | :-- | :-- | :-- | :-- |
+| 3.1 | Sticky headers | Scroll | Date headers visible | ✅ |
+| 3.2 | Expand card | Click card | Edit / Delete visible | ✅ |
+| 3.3 | Edit focus | Edit | Narration textarea focused | ✅ |
+| 3.4 | FAB open during edit | Edit with sheet open | Capture sheet closes, textarea focused | ✅ |
+| 3.5 | Delete | Delete + confirm | Card removed | ✅ |
+
+## 4. TC-4: Capture input focus
+
+| ID | Step | Action | Expected Outcome | Auto |
+| :-- | :-- | :-- | :-- | :-- |
+| 4.1 | Open FAB | Tap + | `#global-input-sheet` visible | ✅ |
+| 4.2 | Auto-focus | After open | `[data-testid="capture-input"]` focused | ✅ `inputpill.test.ts` |
+| 4.3 | Type without click | Keyboard | Text appears in capture input | ✅ |
+
+## 5. TC-5: Insight (manual)
+
 | ID | Step | Action | Expected Outcome |
 | :-- | :-- | :-- | :-- |
-| 3.1 | Scroll List | Swipe up | Sticky headers update contextually (Today -> Yesterday). |
-| 3.2 | Expand Card | Tap "Starbucks" | Card slides down (400ms) to reveal "Edit" / "Delete". |
-| 3.3 | Delete Item | Tap "Delete" | Card fades out; Home page balance updates immediately. |
+| 5.1 | Swipe stories | Tap edges | Cards advance |
+| 5.2 | Wealth ledger | Scroll | Party receivables/payables shown |
+| 5.3 | Empty data | Fresh install | Graceful empty copy (partial) |
 
-- **Follow-up**: Ensure haptic feedback triggers on delete.
+## 6. TC-6: Voice (not implemented)
 
-## 4. TC-4: The Insight (Stories)
 | ID | Step | Action | Expected Outcome |
 | :-- | :-- | :-- | :-- |
-| 4.1 | Swipe Right | Tap right edge | Next card flies in from right (600ms). |
-| 4.2 | Last Card | Tap right on end | Subtle "bounce" animation to indicate boundary. |
-| 4.3 | Data Sync | No transactions | Page shows: "Gathering wisdom... check back in a few days." |
+| 6.1 | Mic tap | Tap mic | Simulated "Coffee at Starbucks $5" only |
 
-- **Follow-up**: Verify empty states for all metric cards.
+---
 
-## 5. TC-5: Voice Interaction (Simulated)
-| ID | Step | Action | Expected Outcome |
-| :-- | :-- | :-- | :-- |
-| 5.1 | Mic Tap | Tap Mic icon | Background pulses; placeholder: "Listening...". |
-| 5.2 | End Recording | Tap Mic again | Text "Coffee $5" auto-appears and submits after 1s. |
+## Running tests
 
-- **Follow-up**: Ensure microphone permission prompt is handled gracefully.
-
-## 6. TC-6: Adaptive Budget Logic (Drift Test)
-| ID | Step | Input | Expected Outcome |
-| :-- | :-- | :-- | :-- |
-| 6.1 | Log anomalous Rent | "Rent $2000" (Prev $1500) | Clarification Modal appears after 2nd consecutive month. |
-| 6.2 | Adjust Baseline | Tap "Yes, this is my new rent." | Daily Pulse "Safe to spend" decreases by $500 / 30. |
-
-- **Follow-up**: Verify that once-off large purchases (e.g., "Laptop $2k") *do not* trigger budget adjustments unless explicitly requested.
-
-## 7. TC-7: Performance & Archival
-| ID | Step | Condition | Expected Outcome |
-| :-- | :-- | :-- | :-- |
-| 7.1 | Heavy Data Stream | 500+ transactions | The Stream scrolls smoothly at 60fps; date headers remain sticky. |
-| 7.2 | Old Data Search | Search "March 2024" | Results appear under 200ms using local indexing. |
-
-- **Follow-up**: Test data persistence across app restarts and updates.
+```sh
+npm test              # all Playwright tests
+npm run test:ui       # interactive UI
+```

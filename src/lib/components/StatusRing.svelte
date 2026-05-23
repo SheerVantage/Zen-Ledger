@@ -7,6 +7,7 @@
         progress = 0.6, // 0 to 1
         centerLabel = "Safe to spend",
         amount = "$120",
+        compact = false,
     } = $props();
 
     const animatedProgress = tweened(0, {
@@ -18,16 +19,25 @@
         animatedProgress.set(progress);
     });
 
+    $effect(() => {
+        animatedProgress.set(progress);
+    });
+
     // SVG parameters
-    const size = 280;
-    const strokeWidth = 24;
-    const radius = (size - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
+    const size = $derived(compact ? 220 : 280);
+    const strokeWidth = $derived(compact ? 20 : 24);
+    const radius = $derived((size - strokeWidth) / 2);
+    const circumference = $derived(2 * Math.PI * radius);
 
     let offset = $derived(circumference - $animatedProgress * circumference);
 </script>
 
-<div class="flex flex-col items-center justify-center py-12">
+<div
+    class="flex flex-col items-center justify-center {compact ? 'py-4' : 'py-12'}"
+    role="img"
+    aria-label="{centerLabel}: {amount}"
+    aria-live="polite"
+>
     <div
         class="relative flex items-center justify-center"
         style="width: {size}px; height: {size}px;"
@@ -86,13 +96,11 @@
         <div
             class="absolute inset-0 flex flex-col items-center justify-center text-center px-8"
         >
-            <span
-                class="text-zen-herb text-[10px] font-bold uppercase tracking-[0.2em] mb-2 opacity-80"
-            >
+            <span class="zen-micro-label mb-2 opacity-90">
                 {centerLabel}
             </span>
             <span
-                class="text-zen-sage text-6xl font-heading font-black tabular-nums tracking-tight drop-shadow-xl"
+                class="text-zen-sage font-heading font-black tabular-nums tracking-tight drop-shadow-xl {compact ? 'text-5xl' : 'text-6xl'}"
             >
                 {amount}
             </span>

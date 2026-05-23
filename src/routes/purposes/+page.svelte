@@ -131,7 +131,7 @@
             </div>
             <button
                 onclick={addPurpose}
-                class="mt-4 w-full bg-zen-sage text-white font-bold py-3 rounded-xl shadow-zen-soft hover:bg-zen-sage/90 transition-all active:scale-95"
+                class="mt-4 w-full bg-zen-sage text-zen-on-primary font-bold py-3 rounded-xl shadow-zen-soft hover:bg-zen-sage/90 transition-all active:scale-95"
             >
                 Add Purpose
             </button>
@@ -178,7 +178,7 @@
                                     </select>
                                     <button
                                         onclick={saveEdit}
-                                        class="px-4 bg-zen-sage text-white text-xs font-bold rounded-lg"
+                                        class="px-4 bg-zen-sage text-zen-on-primary text-xs font-bold rounded-lg"
                                         >Save</button
                                     >
                                     <button
@@ -206,12 +206,12 @@
                                         <span
                                             class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full {p.accountType ===
                                             'expense'
-                                                ? 'bg-red-50 text-red-400'
+                                                ? 'bg-zen-spend/10 text-zen-spend'
                                                 : p.accountType === 'earning'
-                                                  ? 'bg-emerald-50 text-emerald-400'
+                                                  ? 'bg-zen-earn/10 text-zen-earn'
                                                   : p.accountType === 'payable'
-                                                    ? 'bg-pink-50 text-pink-400'
-                                                    : 'bg-blue-50 text-blue-400'}"
+                                                    ? 'bg-zen-spend/10 text-zen-spend'
+                                                    : 'bg-zen-almond/20 text-zen-herb'}"
                                         >
                                             {p.accountType}
                                         </span>

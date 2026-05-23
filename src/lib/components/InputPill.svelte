@@ -4,20 +4,26 @@
     import SelectionMenu from "$lib/components/SelectionMenu.svelte";
     import AutocompleteMenu from "$lib/components/AutocompleteMenu.svelte";
     import { fade, scale, slide } from "svelte/transition";
+    import { tick } from "svelte";
     import Icon from "$lib/components/Icon.svelte";
+    import type { TransactionSubmitOverrides } from "$lib/utils/submitTransaction";
 
     let {
         onInput = (
             text: string,
-            overrides?: { partyId?: string; purposeId?: string; account?: string; toAccount?: string }
+            overrides?: TransactionSubmitOverrides
         ) => {},
+        onExtrasChange = (_open: boolean) => {},
         mode = "standalone",
+        restoreText = "",
+        restoreNonce = 0,
+        autoFocusOnMount = false,
     } = $props();
 
     let inputValue = $state("");
     let isRecording = $state(false);
     let isProcessing = $state(false);
-    let inputRef: HTMLInputElement;
+    let inputRef: HTMLInputElement | undefined;
     let showSelectionMenu = $state(false);
     let selectionText = $state("");
     let selectionCoords = $state({});
@@ -43,6 +49,41 @@
     let prospectType = $state('pipeline');
     let isTransfer = $derived(parsedCategoryType === 'transfer');
     let isProspect = $derived(parsedCategoryType === 'prospect');
+
+    $effect(() => {
+        onExtrasChange(showExtras);
+    });
+
+    function focusCaptureInput(node?: HTMLInputElement | null) {
+        const el = node ?? inputRef;
+        if (!el) return;
+        el.focus({ preventScroll: true });
+        const len = el.value.length;
+        el.setSelectionRange(len, len);
+    }
+
+    function mountCaptureInput(node: HTMLInputElement) {
+        inputRef = node;
+        if (autoFocusOnMount) {
+            queueMicrotask(() => focusCaptureInput(node));
+            requestAnimationFrame(() => focusCaptureInput(node));
+        }
+        return {
+            destroy() {
+                if (inputRef === node) inputRef = undefined;
+            },
+        };
+    }
+
+    $effect(() => {
+        restoreNonce;
+        if (!restoreText) return;
+        inputValue = restoreText;
+        showExtras = false;
+        preTaggedPartyId = "";
+        preTaggedPurposeId = "";
+        void tick().then(() => focusCaptureInput());
+    });
     
     const accountOptions = ["cash", "bank", "bkash", "nagad"];
 
@@ -89,6 +130,7 @@
     }
 
     function selectOption(option: { id: string; name: string; emoji: string }) {
+        if (!inputRef) return;
         const cursor = inputRef.selectionStart || 0;
         const beforeCursor = inputValue.substring(0, cursor);
         const afterCursor = inputValue.substring(cursor);
@@ -109,7 +151,7 @@
         }
 
         showAutocomplete = false;
-        inputRef.focus();
+        focusCaptureInput();
     }
 
     function handleMouseUp(e: MouseEvent) {
@@ -237,7 +279,7 @@
         preTaggedPartyId = "";
         preTaggedPurposeId = "";
         showExtras = false;
-        inputRef.blur();
+        inputRef?.blur();
 
         setTimeout(() => {
             onInput(text, overrides);
@@ -293,9 +335,14 @@
             onClose={() => (showAutocomplete = false)}
         />
         <!-- Input Field -->
+        <!-- svelte-ignore a11y_autofocus -->
         <input
             bind:this={inputRef}
+            use:mountCaptureInput
             bind:value={inputValue}
+            data-capture-input
+            data-testid="capture-input"
+            autofocus={autoFocusOnMount}
             onkeydown={handleKeydown}
             onmouseup={handleMouseUp}
             oninput={handleInputEvent}
@@ -332,12 +379,12 @@
                         ></div>
                     </div>
                 {:else if inputValue.trim()}
-                    <Icon name="check" class_="h-6 w-6 text-white" />
+                    <Icon name="check" class_="h-6 w-6 text-zen-on-primary" />
                 {:else}
                     <Icon
                         name={isRecording ? 'stop' : 'zap'}
                         class_="h-5 w-5 transition-colors duration-300 {isRecording
-                            ? 'text-white'
+                            ? 'text-zen-on-primary'
                             : 'text-zen-sage opacity-80'}"
                     />
                 {/if}
@@ -368,7 +415,7 @@
                             onclick={() => selectedAccount = opt}
                             class="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase transition-all
                             {selectedAccount === opt 
-                                ? 'bg-zen-sage text-white shadow-sm' 
+                                ? 'bg-zen-sage text-zen-on-primary shadow-sm' 
                                 : 'bg-zen-oat/40 text-zen-herb hover:bg-zen-almond/20'}"
                         >
                             {opt}
@@ -386,7 +433,7 @@
                                 onclick={() => selectedToAccount = opt}
                                 class="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase transition-all
                                 {selectedToAccount === opt 
-                                    ? 'bg-zen-sage text-white shadow-sm' 
+                                    ? 'bg-zen-sage text-zen-on-primary shadow-sm' 
                                     : 'bg-zen-oat/40 text-zen-herb hover:bg-zen-almond/20'}"
                             >
                                 {opt}
@@ -401,7 +448,7 @@
                 <button 
                     onclick={() => isPassthrough = !isPassthrough}
                     aria-label="Toggle passthrough status"
-                    class="h-6 w-11 rounded-full p-1 transition-colors {isPassthrough ? 'bg-pink-500' : 'bg-zen-herb/20'}"
+                    class="h-6 w-11 rounded-full p-1 transition-colors {isPassthrough ? 'bg-zen-sage' : 'bg-zen-herb/20'}"
                 >
                     <div class="h-4 w-4 rounded-full bg-white transition-transform {isPassthrough ? 'translate-x-5' : 'translate-x-0'}"></div>
                 </button>
@@ -417,7 +464,7 @@
                                     onclick={() => confidence = conf as any}
                                     class="px-3 py-1 rounded-lg text-[9px] font-bold uppercase transition-all
                                     {confidence === conf 
-                                        ? 'bg-zen-sage text-white' 
+                                        ? 'bg-zen-sage text-zen-on-primary' 
                                         : 'bg-zen-oat/40 text-zen-herb hover:bg-zen-almond/20'}"
                                 >
                                     {conf}
@@ -446,7 +493,7 @@
                 </button>
                 <button 
                     onclick={submitInput}
-                    class="px-8 py-2 bg-zen-sage text-white text-[10px] font-bold uppercase rounded-full shadow-zen-soft hover:shadow-zen-bold active:scale-95 transition-all"
+                    class="px-8 py-2 bg-zen-sage text-zen-on-primary text-[10px] font-bold uppercase rounded-full shadow-zen-soft hover:shadow-zen-bold active:scale-95 transition-all"
                 >
                     Add Transaction
                 </button>

@@ -128,7 +128,7 @@
                 </button>
                 <button 
                     onclick={handleLog}
-                    class="flex-[2] py-4 bg-zen-sage text-white rounded-2xl text-xs font-bold shadow-zen-soft hover:scale-[1.02] active:scale-[0.98] transition-all"
+                    class="flex-[2] py-4 bg-zen-sage text-zen-on-primary rounded-2xl text-xs font-bold shadow-zen-soft hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
                     Confirm & Log
                 </button>

@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-22T00:00:00.000Z",
+  "title": "Design System: Zen Ledger",
+  "extensions": {
+    "colorMeta": {
+      "zen-oat": {
+        "role": "neutral",
+        "displayName": "Warm Oat",
+        "canonical": "oklch(95% 0.012 95)",
+        "tonalRamp": ["oklch(25% 0.012 95)", "oklch(35% 0.012 95)", "oklch(45% 0.012 95)", "oklch(55% 0.012 95)", "oklch(65% 0.012 95)", "oklch(75% 0.012 95)", "oklch(85% 0.012 95)", "oklch(95% 0.012 95)"]
+      },
+      "zen-sage": {
+        "role": "primary",
+        "displayName": "Deep Sage",
+        "canonical": "oklch(48% 0.03 120)",
+        "tonalRamp": ["oklch(20% 0.03 120)", "oklch(28% 0.03 120)", "oklch(36% 0.03 120)", "oklch(44% 0.03 120)", "oklch(48% 0.03 120)", "oklch(56% 0.03 120)", "oklch(68% 0.03 120)", "oklch(80% 0.03 120)"]
+      },
+      "zen-herb": {
+        "role": "neutral",
+        "displayName": "Dried Herb",
+        "canonical": "oklch(68% 0.025 110)",
+        "tonalRamp": ["oklch(30% 0.025 110)", "oklch(40% 0.025 110)", "oklch(50% 0.025 110)", "oklch(58% 0.025 110)", "oklch(68% 0.025 110)", "oklch(76% 0.025 110)", "oklch(84% 0.025 110)", "oklch(92% 0.025 110)"]
+      },
+      "zen-spend": {
+        "role": "tertiary",
+        "displayName": "Terracotta Spend",
+        "canonical": "oklch(72% 0.08 55)",
+        "tonalRamp": ["oklch(35% 0.08 55)", "oklch(45% 0.08 55)", "oklch(55% 0.08 55)", "oklch(62% 0.08 55)", "oklch(72% 0.08 55)", "oklch(80% 0.08 55)", "oklch(88% 0.06 55)", "oklch(94% 0.04 55)"]
+      },
+      "zen-earn": {
+        "role": "tertiary",
+        "displayName": "Dusty Green Earn",
+        "canonical": "oklch(74% 0.03 120)",
+        "tonalRamp": ["oklch(35% 0.03 120)", "oklch(45% 0.03 120)", "oklch(55% 0.03 120)", "oklch(64% 0.03 120)", "oklch(74% 0.03 120)", "oklch(82% 0.025 120)", "oklch(90% 0.02 120)", "oklch(96% 0.01 120)"]
+      },
+      "zen-almond": {
+        "role": "secondary",
+        "displayName": "Almond",
+        "canonical": "oklch(82% 0.04 65)",
+        "tonalRamp": ["oklch(40% 0.04 65)", "oklch(50% 0.04 65)", "oklch(60% 0.04 65)", "oklch(70% 0.04 65)", "oklch(82% 0.04 65)", "oklch(88% 0.035 65)", "oklch(93% 0.03 65)", "oklch(97% 0.02 65)"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero metrics and story headlines." },
+      "headline": { "displayName": "Headline", "purpose": "Section titles and card headlines." },
+      "body": { "displayName": "Body", "purpose": "Narration, descriptions, modal copy." },
+      "micro": { "displayName": "Micro Label", "purpose": "Uppercase metric category labels." }
+    },
+    "shadows": [
+      { "name": "zen-soft", "value": "0px 8px 32px -4px rgba(107, 112, 92, 0.12)", "purpose": "Metric cards, selected chips, filter panels." },
+      { "name": "zen-heavy", "value": "0px 12px 48px -8px rgba(0, 0, 0, 0.15)", "purpose": "FAB, bottom nav, modals, input sheet." }
+    ],
+    "motion": [
+      { "name": "ease-theme", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Theme switch, 400ms background/color transitions." },
+      { "name": "ease-sheet", "value": "cubic-bezier(0, 0, 0.2, 1)", "purpose": "Bottom sheet fly-in, 600ms." },
+      { "name": "ease-press", "value": "scale(0.95)", "purpose": "Button/card active press feedback." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "max-content", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Sage pill button for primary actions.",
+      "html": "<button class=\"ds-btn-primary\">Save Transaction</button>",
+      "css": ".ds-btn-primary { background: #6B705C; color: #ffffff; padding: 12px 24px; font-family: 'Quicksand', sans-serif; font-weight: 600; font-size: 1rem; border: none; border-radius: 9999px; cursor: pointer; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s; } .ds-btn-primary:hover { background: #5a5f4e; } .ds-btn-primary:active { transform: scale(0.95); } .ds-btn-primary:focus-visible { outline: 2px solid #6B705C; outline-offset: 2px; }"
+    },
+    {
+      "name": "Filter Chip Selected",
+      "kind": "chip",
+      "refersTo": "chip-selected",
+      "description": "Active category filter on Pulse.",
+      "html": "<button class=\"ds-chip-selected\">Coffee</button>",
+      "css": ".ds-chip-selected { background: #6B705C; color: #ffffff; padding: 6px 16px; font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 0.75rem; border: none; border-radius: 9999px; cursor: pointer; box-shadow: 0px 8px 32px -4px rgba(107, 112, 92, 0.12); transition: transform 0.2s; } .ds-chip-selected:active { transform: scale(0.95); }"
+    },
+    {
+      "name": "Filter Chip Default",
+      "kind": "chip",
+      "refersTo": "chip-default",
+      "description": "Inactive category filter.",
+      "html": "<button class=\"ds-chip-default\">All</button>",
+      "css": ".ds-chip-default { background: rgba(255, 255, 255, 0.7); color: #A5A58D; padding: 6px 16px; font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 0.75rem; border: none; border-radius: 9999px; cursor: pointer; transition: background 0.2s, transform 0.2s; } .ds-chip-default:hover { background: rgba(221, 190, 169, 0.2); } .ds-chip-default:active { transform: scale(0.95); }"
+    },
+    {
+      "name": "Input Pill",
+      "kind": "input",
+      "refersTo": "input-pill",
+      "description": "Primary transaction entry field, 64px pill.",
+      "html": "<div class=\"ds-input-pill-wrap\"><input class=\"ds-input-pill\" placeholder=\"Dinner at Mario's $45...\" /><button class=\"ds-input-pill-action\" aria-label=\"Submit\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"><polyline points=\"20 6 9 17 4 12\"/></svg></button></div>",
+      "css": ".ds-input-pill-wrap { display: flex; align-items: center; background: rgba(255,255,255,0.7); border: 1px solid rgba(165,165,141,0.1); border-radius: 9999px; box-shadow: 0px 12px 48px -8px rgba(0,0,0,0.15); overflow: hidden; } .ds-input-pill { flex: 1; height: 64px; background: transparent; border: none; padding: 0 32px; font-family: 'Quicksand', sans-serif; font-weight: 600; font-size: 1.125rem; color: #6B705C; outline: none; } .ds-input-pill::placeholder { color: rgba(165,165,141,0.4); } .ds-input-pill-action { width: 48px; height: 48px; margin-right: 8px; border-radius: 9999px; background: #6B705C; color: #fff; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; } .ds-input-pill-action:active { transform: scale(0.95); }"
+    },
+    {
+      "name": "Metric Card",
+      "kind": "card",
+      "refersTo": "card-metric",
+      "description": "Dashboard metric tile on Pulse.",
+      "html": "<div class=\"ds-metric-card\"><span class=\"ds-metric-label\">Liquid Cash</span><span class=\"ds-metric-value\">৳12.4k</span><span class=\"ds-metric-sub\">Ready to spend</span></div>",
+      "css": ".ds-metric-card { background: rgba(255,255,255,0.4); backdrop-filter: blur(24px); border: 1px solid rgba(165,165,141,0.1); border-radius: 40px; padding: 20px; box-shadow: 0px 8px 32px -4px rgba(107, 112, 92, 0.12); display: flex; flex-direction: column; } .ds-metric-label { font-family: 'Quicksand', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(165,165,141,0.5); margin-bottom: 4px; } .ds-metric-value { font-family: 'Nunito', sans-serif; font-size: 1.875rem; font-weight: 900; color: #6B705C; font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 4px; } .ds-metric-sub { font-family: 'Quicksand', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: rgba(165,165,141,0.4); }"
+    },
+    {
+      "name": "Transaction Card",
+      "kind": "card",
+      "refersTo": "card-metric",
+      "description": "Collapsed stream entry.",
+      "html": "<div class=\"ds-tx-card\"><div class=\"ds-tx-icon\">☕</div><div class=\"ds-tx-body\"><span class=\"ds-tx-title\">Starbucks</span><span class=\"ds-tx-sub\">Personal · 9:41 AM</span></div><span class=\"ds-tx-amount\">- ৳450</span></div>",
+      "css": ".ds-tx-card { display: flex; align-items: center; gap: 12px; background: #ffffff; border: 1px solid rgba(165,165,141,0.1); border-radius: 24px; padding: 16px; min-height: 80px; } .ds-tx-icon { width: 44px; height: 44px; border-radius: 9999px; background: rgba(221,190,169,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; } .ds-tx-body { flex: 1; display: flex; flex-direction: column; gap: 2px; } .ds-tx-title { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 1rem; color: #6B705C; } .ds-tx-sub { font-family: 'Quicksand', sans-serif; font-weight: 600; font-size: 0.75rem; color: #A5A58D; } .ds-tx-amount { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 1rem; color: #CB997E; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Bottom Nav FAB",
+      "kind": "button",
+      "refersTo": "nav-fab",
+      "description": "Center add-transaction button in bottom nav.",
+      "html": "<button class=\"ds-nav-fab\" aria-label=\"Add Transaction\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"><line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"/><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/></svg></button>",
+      "css": ".ds-nav-fab { width: 64px; height: 64px; border-radius: 9999px; background: #6B705C; color: #ffffff; border: 4px solid rgba(255,255,255,0.85); box-shadow: 0px 12px 48px -8px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; } .ds-nav-fab:hover { transform: scale(1.05); } .ds-nav-fab:active { transform: scale(0.95); }"
+    },
+    {
+      "name": "Parser Modal Option",
+      "kind": "custom",
+      "refersTo": "button-ghost",
+      "description": "Clarification sheet option row.",
+      "html": "<button class=\"ds-clarify-option\"><span class=\"ds-clarify-emoji\">🍎</span><span class=\"ds-clarify-text\"><strong>Groceries?</strong><small>Apple Store</small></span></button>",
+      "css": ".ds-clarify-option { width: 100%; display: flex; align-items: center; gap: 16px; padding: 16px; background: rgba(244,241,235,0.4); border: 1px solid rgba(165,165,141,0.1); border-radius: 24px; cursor: pointer; text-align: left; transition: background 0.2s, transform 0.2s; } .ds-clarify-option:hover { background: rgba(221,190,169,0.2); } .ds-clarify-option:active { transform: scale(0.98); } .ds-clarify-emoji { width: 48px; height: 48px; border-radius: 9999px; background: rgba(221,190,169,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; } .ds-clarify-text { display: flex; flex-direction: column; } .ds-clarify-text strong { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 1.125rem; color: #6B705C; } .ds-clarify-text small { font-family: 'Quicksand', sans-serif; font-weight: 600; font-size: 0.875rem; color: #A5A58D; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Digital Softness",
+    "overview": "Zen Ledger feels like unbleached paper and clay: warm, rounded, quietly confident. Mobile-first, one-handed, bottom-weighted. Surfaces float with soft shadows; numbers use tabular precision inside friendly type.",
+    "keyCharacteristics": [
+      "Warm oat background with 2% noise grain overlay",
+      "No pure black or white; sage and herb carry hierarchy",
+      "Pill inputs and chips; cards 24px–40px radius",
+      "Terracotta outflows, dusty green inflows; never punitive red",
+      "Custom SVG icons only; emoji for category identity"
+    ],
+    "rules": [
+      { "name": "The Calm Money Rule", "body": "Never use pure red for debt or overspend. Terracotta and rose carry outflow semantics.", "section": "colors" },
+      { "name": "The One Accent Rule", "body": "Sage is the only strong brand color on any screen.", "section": "colors" },
+      { "name": "The Float Rule", "body": "Only FAB, bottom nav, modals, and primary metric cards get heavy shadows.", "section": "elevation" },
+      { "name": "The No Side-Stripe Rule", "body": "Never use colored left/right borders on cards or list items.", "section": "elevation" },
+      { "name": "The Number Alignment Rule", "body": "All currency values use tabular-nums and Nunito 700–900.", "section": "typography" }
+    ],
+    "dos": [
+      "Do use Zen token classes from layout.css",
+      "Do keep bottom nav and FAB visible on all main routes",
+      "Do use active:scale-95 on tappable elements",
+      "Do animate modals at 400–600ms with ease-out curves",
+      "Do maintain WCAG AA contrast in both themes"
+    ],
+    "donts": [
+      "Don't use navy-and-gold fintech palettes or hero-metric templates",
+      "Don't add colored side-stripe borders on cards",
+      "Don't use gradient text for amounts or headings",
+      "Don't import Lucide or external icon libraries",
+      "Don't show punitive red or shame language for missed entries",
+      "Don't introduce off-palette colors like raw Tailwind blue on dashboard cards"
+    ]
+  }
+}

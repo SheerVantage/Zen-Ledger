@@ -60,7 +60,7 @@
                 <button
                     onclick={() => onSelect(option)}
                     onmouseenter={() => selectedIndex = i}
-                    class="w-full flex items-center gap-3 px-4 py-2 text-left transition-colors {selectedIndex === i ? 'bg-zen-sage text-white' : 'hover:bg-zen-almond/20 text-zen-sage'}"
+                    class="w-full flex items-center gap-3 px-4 py-2 text-left transition-colors {selectedIndex === i ? 'bg-zen-sage text-zen-on-primary' : 'hover:bg-zen-almond/20 text-zen-sage'}"
                 >
                     <span class="text-lg">{option.emoji}</span>
                     <span class="font-body font-bold text-sm">{option.name}</span>

@@ -14,14 +14,14 @@
             description: "Manage categories and account types",
             icon: "🏷️",
             href: "/purposes",
-            color: "bg-emerald-50 text-emerald-600"
+            color: "bg-zen-earn/10 text-zen-sage"
         },
         {
             title: "Parties",
             description: "Manage contacts and entities",
             icon: "👥",
             href: "/parties",
-            color: "bg-blue-50 text-blue-600"
+            color: "bg-zen-almond/20 text-zen-sage"
         }
     ];
 
@@ -200,7 +200,7 @@
                 </div>
                 <button 
                     onclick={saveProfile}
-                    class="w-full py-2 bg-zen-sage text-white rounded-xl text-xs font-bold shadow-zen-soft hover:scale-[1.02] active:scale-[0.98] transition-all"
+                    class="w-full py-2 bg-zen-sage text-zen-on-primary rounded-xl text-xs font-bold shadow-zen-soft hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
                     Save Changes
                 </button>
@@ -240,7 +240,7 @@
                             <div class="flex gap-2 flex-1">
                                 <input bind:value={editCatEmoji} class="w-10 text-center bg-zen-oat/30 border border-zen-herb/10 rounded-lg p-1 text-lg" />
                                 <input bind:value={editCatName} class="flex-1 bg-zen-oat/30 border border-zen-herb/10 rounded-lg px-3 py-1 text-sm text-zen-sage" />
-                                <button onclick={saveCategoryEdit} class="px-3 bg-zen-sage text-white text-[10px] font-bold rounded-lg">Save</button>
+                                <button onclick={saveCategoryEdit} class="px-3 bg-zen-sage text-zen-on-primary text-[10px] font-bold rounded-lg">Save</button>
                                 <button onclick={() => editingCategoryId = ""} class="px-3 border border-zen-herb/20 text-zen-herb text-[10px] font-bold rounded-lg">✕</button>
                             </div>
                         {:else}
@@ -325,7 +325,7 @@
                         <button 
                             onclick={addRecurringTemplate}
                             disabled={!newRTTitle || !newRTPurposeId}
-                            class="w-full py-3 bg-zen-sage text-white rounded-xl text-xs font-bold shadow-zen-soft hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:grayscale"
+                            class="w-full py-3 bg-zen-sage text-zen-on-primary rounded-xl text-xs font-bold shadow-zen-soft hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:grayscale"
                         >
                             Add Template
                         </button>
@@ -402,7 +402,7 @@
                 onclick={resetApplication}
                 class="w-full flex items-center gap-4 p-4 bg-zen-panel rounded-2xl shadow-sm border border-zen-spend/5 hover:bg-zen-spend/5 hover:scale-[1.01] transition-all group text-left"
             >
-                <div class="h-12 w-12 flex-shrink-0 rounded-xl bg-red-50 text-zen-spend flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                <div class="h-12 w-12 flex-shrink-0 rounded-xl bg-zen-spend/10 text-zen-spend flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                     🗑️
                 </div>
                 <div class="flex-1">

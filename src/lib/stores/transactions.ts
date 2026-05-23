@@ -89,25 +89,25 @@ function createStore() {
     return {
         subscribe,
         addTransaction: (t: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>) => {
+            const id = Math.random().toString(36).substring(2, 9);
+            const timestamp = new Date().toISOString();
+
             update(all => {
-                const timestamp = new Date().toISOString();
-                
-                // Determine default status based on category (purpose)
                 const allPurposes = get(purposes);
                 const purpose = allPurposes.find(p => p.id === t.purposeId);
                 const accountType = purpose?.accountType || 'expense';
-                
+
                 let defaultStatus: Transaction['status'] = 'completed';
                 if (['receivable', 'payable', 'prospect'].includes(accountType)) {
                     defaultStatus = 'pending';
                 }
 
                 const newTransaction: Transaction = {
-                    account: 'cash', // Global default
+                    account: 'cash',
                     status: defaultStatus,
                     isPassthrough: false,
                     ...t,
-                    id: Math.random().toString(36).substring(2, 9),
+                    id,
                     createdAt: timestamp,
                     updatedAt: timestamp
                 };
@@ -116,6 +116,7 @@ function createStore() {
                 _recalculate(updated);
                 return updated;
             });
+            return id;
         },
         deleteTransaction: (id: string) => {
             update(all => {

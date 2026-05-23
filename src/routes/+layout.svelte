@@ -1,30 +1,122 @@
 <script lang="ts">
 	import "./layout.css";
 	import favicon from "$lib/assets/favicon.svg";
-	import { theme } from "$lib/stores/ui";
+    import { theme, isCaptureInputVisible, isEditingTransaction, toggleCaptureInput, closeCaptureInput, openCaptureInput } from "$lib/stores/ui";
     import { page } from "$app/stores";
     import { onNavigate } from "$app/navigation";
-    import { fade, fly, slide } from "svelte/transition";
+    import { onMount, tick } from "svelte";
+    import { fade, slide } from "svelte/transition";
     import InputPill from "$lib/components/InputPill.svelte";
-    import ParserModal from "$lib/components/ParserModal.svelte";
+    import CaptureReviewSheet from "$lib/components/CaptureReviewSheet.svelte";
+    import Toast from "$lib/components/Toast.svelte";
     import Icon from "$lib/components/Icon.svelte";
-    import { addTransaction } from "$lib/stores/transactions";
-    import { parseTransaction } from "$lib/utils/transactionParser";
+    import {
+        submitCapture,
+        commitParsedTransaction,
+        type TransactionSubmitOverrides,
+    } from "$lib/utils/submitTransaction";
+    import type { ParsedTransactionDraft } from "$lib/utils/transactionParser";
+    import type { ParseAssessment } from "$lib/utils/parseConfidence";
 
 	let { children } = $props();
 
     // Navigation state
+    const MENU_TRANSITION_MS = 280;
+    let isMenuMounted = $state(false);
     let isMenuOpen = $state(false);
-    let isInputVisible = $state(false);
+    let menuCloseTimer: ReturnType<typeof setTimeout> | undefined;
 
-    // Bottom Bar State (Global)
-    let isModalOpen = $state(false);
+    // Capture review state
+    let isReviewOpen = $state(false);
     let pendingInput = $state("");
+    let pendingDraft = $state<ParsedTransactionDraft | null>(null);
+    let pendingAssessment = $state<ParseAssessment | null>(null);
+    let inputRestoreNonce = $state(0);
+    let inputHasExtras = $state(false);
+    let bottomChromeEl: HTMLElement | null = $state(null);
+
+    function syncBottomChromeHeight() {
+        if (typeof document === "undefined" || !bottomChromeEl) return;
+        const height = bottomChromeEl.getBoundingClientRect().height;
+        document.documentElement.style.setProperty("--bottom-chrome-height", `${height}px`);
+    }
+
+    onMount(() => {
+        if (!bottomChromeEl) return;
+
+        const observer = new ResizeObserver(() => syncBottomChromeHeight());
+        observer.observe(bottomChromeEl);
+        syncBottomChromeHeight();
+
+        return () => observer.disconnect();
+    });
+
+    $effect(() => {
+        $isCaptureInputVisible;
+        isReviewOpen;
+        inputHasExtras;
+        $isEditingTransaction;
+        void tick().then(syncBottomChromeHeight);
+    });
+
+    function handleWindowKeydown(e: KeyboardEvent) {
+        if (e.key !== "Escape") return;
+        if (isReviewOpen) {
+            handleReviewCancel();
+            return;
+        }
+        if (isMenuMounted) {
+            closeMenu();
+            return;
+        }
+        if ($isCaptureInputVisible) {
+            closeCaptureInput();
+        }
+    }
+
+    function openMenu() {
+        if (menuCloseTimer) {
+            clearTimeout(menuCloseTimer);
+            menuCloseTimer = undefined;
+        }
+        isMenuMounted = true;
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                isMenuOpen = true;
+            });
+        });
+    }
+
+    function closeMenu() {
+        if (!isMenuMounted) return;
+        isMenuOpen = false;
+        menuCloseTimer = setTimeout(() => {
+            isMenuMounted = false;
+            menuCloseTimer = undefined;
+        }, MENU_TRANSITION_MS);
+    }
+
+    function toggleMenu() {
+        if (isMenuMounted && isMenuOpen) closeMenu();
+        else openMenu();
+    }
+
+    $effect(() => {
+        if (typeof document === "undefined") return;
+        document.body.style.overflow = isMenuMounted ? "hidden" : "";
+        return () => {
+            document.body.style.overflow = "";
+        };
+    });
+
+    function toggleInput() {
+        toggleCaptureInput();
+    }
 
 	// Global theme sync
 	$effect(() => {
 		if (typeof document !== "undefined") {
-			document.body.setAttribute("data-theme", $theme);
+			document.documentElement.setAttribute("data-theme", $theme);
 		}
 	});
 
@@ -34,6 +126,8 @@
      * View Transition API for seamless page morphing.
      */
     onNavigate((navigation) => {
+        closeMenu();
+
         if (!document.startViewTransition) return;
 
         return new Promise((resolve) => {
@@ -44,63 +138,89 @@
         });
     });
 
+    const pathname = $derived($page.url.pathname);
+
     const getPageTitle = $derived.by(() => {
-        const path = $page.url.pathname;
-        if (path === '/') return "Pulse";
-        if (path.includes('/stream')) return "Stream";
-        if (path.includes('/settings')) return "Settings";
-        if (path.includes('/purposes')) return "Purposes";
-        if (path.includes('/parties')) return "Parties";
-        if (path.includes('/insight')) return "Insight";
+        if (pathname === '/') return "Pulse";
+        if (pathname.startsWith('/stream')) return "Stream";
+        if (pathname.startsWith('/settings')) return "Settings";
+        if (pathname.startsWith('/purposes')) return "Purposes";
+        if (pathname.startsWith('/parties')) return "Parties";
+        if (pathname.startsWith('/insight')) return "Insight";
         return "Zen Ledger";
     });
 
-    function handleNewInput(text: string) {
-        if (text.toLowerCase().includes("apple")) {
-            pendingInput = text;
-            isModalOpen = true;
-            return;
+    function isNavActive(route: 'pulse' | 'stream' | 'insight' | 'settings') {
+        switch (route) {
+            case 'pulse':
+                return pathname === '/';
+            case 'stream':
+                return pathname.startsWith('/stream');
+            case 'insight':
+                return pathname.startsWith('/insight');
+            case 'settings':
+                return (
+                    pathname.startsWith('/settings') ||
+                    pathname.startsWith('/parties') ||
+                    pathname.startsWith('/purposes')
+                );
         }
-        const parsed = parseTransaction(text);
-        addTransaction(parsed);
     }
 
-    function handleModalSelect(data: any) {
-        addTransaction({
-            narration: data.narration,
-            amount: data.amount,
-            purposeId: data.purposeId,
-            date: data.date,
-            partyId: data.partyId,
-        });
-        isModalOpen = false;
+    function clearReviewState() {
+        isReviewOpen = false;
         pendingInput = "";
+        pendingDraft = null;
+        pendingAssessment = null;
+    }
+
+    function handleNewInput(text: string, overrides?: TransactionSubmitOverrides) {
+        const result = submitCapture(text, overrides);
+        if (result.status === "review") {
+            pendingInput = result.originalText;
+            pendingDraft = result.draft;
+            pendingAssessment = result.assessment;
+            isReviewOpen = true;
+            closeCaptureInput();
+            return;
+        }
+    }
+
+    function handleInputFromFab(text: string, overrides?: TransactionSubmitOverrides) {
+        handleNewInput(text, overrides);
+        closeCaptureInput();
+    }
+
+    function handleReviewConfirm(overrides: TransactionSubmitOverrides) {
+        if (!pendingDraft) return;
+        commitParsedTransaction(pendingDraft, overrides);
+        clearReviewState();
+    }
+
+    function handleReviewCancel() {
+        isReviewOpen = false;
+        pendingDraft = null;
+        pendingAssessment = null;
+        openCaptureInput();
+        inputRestoreNonce++;
     }
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<svelte:window onkeydown={handleWindowKeydown} />
 
 <div class="noise-overlay text-zen-sage"></div>
+<Toast />
 
 <!-- Global Top App Bar -->
 <header
-    class="fixed top-0 left-0 right-0 z-50 bg-zen-surface/60 backdrop-blur-3xl border-b border-zen-herb/10 shadow-zen"
+    class="fixed top-0 left-0 right-0 z-50 bg-zen-panel/95 border-b border-zen-herb/10 shadow-zen"
 >
     <!-- ... (rest of header content) ... -->
     <div class="h-16 flex items-center justify-between px-6 max-w-7xl mx-auto">
-        <!-- Brand & Hamburger -->
-        <div class="flex items-center gap-4">
-            <button
-                onclick={() => isMenuOpen = !isMenuOpen}
-                class="lg:hidden p-2 -ml-2 text-zen-herb hover:text-zen-sage transition-colors"
-                aria-label="Menu"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-            </button>
-            
-            <a href="/" class="flex items-center gap-2 group">
+        <!-- Brand -->
+        <div class="flex items-center gap-4 min-w-0">
+            <a href="/" class="flex items-center gap-2 group shrink-0">
                 <div class="h-8 w-8 bg-zen-sage rounded-xl flex items-center justify-center text-lg shadow-lg shadow-zen-sage/20 group-hover:scale-110 transition-transform">
                     🌿
                 </div>
@@ -111,46 +231,113 @@
         </div>
 
         <!-- Dynamic Page Title -->
-        <div class="absolute left-1/2 -translate-x-1/2">
-            <h1 class="text-lg font-heading font-bold text-zen-sage tracking-tight">
+        <div class="absolute left-1/2 -translate-x-1/2 pointer-events-none px-20">
+            <h1 class="text-lg font-heading font-bold text-zen-sage tracking-tight truncate text-center">
                 {getPageTitle}
             </h1>
         </div>
 
         <!-- Utility Actions -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1 shrink-0">
             <button
                 onclick={() => theme.toggle()}
                 class="h-10 w-10 bg-zen-almond/20 rounded-xl flex items-center justify-center text-zen-sage transition-all active:scale-95 shadow-sm hover:bg-zen-almond/40"
                 aria-label="Toggle Theme"
             >
                 {#if $theme === "zen"}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
-                    </svg>
+                    <Icon name="sun" size="20" strokeWidth="2" />
                 {:else}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>
+                    <Icon name="moon" size="20" strokeWidth="2" />
+                {/if}
+            </button>
+            <button
+                type="button"
+                onclick={toggleMenu}
+                class="lg:hidden h-10 w-10 rounded-xl flex items-center justify-center text-zen-herb hover:text-zen-sage hover:bg-zen-almond/20 transition-all active:scale-95"
+                aria-label={isMenuMounted ? "Close menu" : "Open menu"}
+                aria-expanded={isMenuOpen}
+                aria-controls="mobile-drawer"
+            >
+                {#if isMenuMounted}
+                    <Icon name="close" size="22" strokeWidth="2" />
+                {:else}
+                    <Icon name="menu" size="22" strokeWidth="2" />
                 {/if}
             </button>
         </div>
     </div>
-
-    <!-- Mobile Menu Slideout -->
-    {#if isMenuOpen}
-        <div 
-            transition:slide
-            class="lg:hidden border-t border-zen-herb/10 bg-zen-surface/90 backdrop-blur-3xl p-4 space-y-2 shadow-zen-heavy"
-        >
-            <a href="/" onclick={() => isMenuOpen = false} class="block px-4 py-3 rounded-xl hover:bg-zen-sage/10 text-zen-sage font-bold">Pulse Dashboard</a>
-            <a href="/stream" onclick={() => isMenuOpen = false} class="block px-4 py-3 rounded-xl hover:bg-zen-sage/10 text-zen-sage font-bold">Transaction Stream</a>
-            <a href="/settings" onclick={() => isMenuOpen = false} class="block px-4 py-3 rounded-xl hover:bg-zen-sage/10 text-zen-sage font-bold">Settings</a>
-        </div>
-    {/if}
 </header>
 
-<main class="min-h-screen relative overflow-x-hidden pt-16 pb-40">
+<!-- Mobile drawer: overflow routes not in bottom bar -->
+{#if isMenuMounted}
+    <div class="mobile-drawer-root lg:hidden" class:open={isMenuOpen}>
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div
+            class="mobile-drawer-backdrop"
+            onclick={closeMenu}
+            aria-hidden="true"
+        ></div>
+        <div
+            id="mobile-drawer"
+            class="mobile-drawer-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="More navigation"
+        >
+        <div class="mobile-drawer-header">
+            <p class="mobile-drawer-title">More</p>
+            <button
+                type="button"
+                onclick={closeMenu}
+                class="mobile-drawer-close"
+                aria-label="Close menu"
+            >
+                <Icon name="close" size="20" strokeWidth="2" />
+            </button>
+        </div>
+
+        <nav class="mobile-drawer-nav">
+            <p class="mobile-drawer-section">Manage</p>
+            <a
+                href="/parties"
+                onclick={closeMenu}
+                class="mobile-drawer-link"
+                aria-current={pathname.startsWith('/parties') ? 'page' : undefined}
+            >
+                <Icon name="users" size="20" strokeWidth={pathname.startsWith('/parties') ? '2.5' : '2'} />
+                <span>Parties</span>
+            </a>
+            <a
+                href="/purposes"
+                onclick={closeMenu}
+                class="mobile-drawer-link"
+                aria-current={pathname.startsWith('/purposes') ? 'page' : undefined}
+            >
+                <Icon name="zap" size="20" strokeWidth={pathname.startsWith('/purposes') ? '2.5' : '2'} />
+                <span>Purposes</span>
+            </a>
+
+            <p class="mobile-drawer-section">App</p>
+            <a
+                href="/settings"
+                onclick={closeMenu}
+                class="mobile-drawer-link"
+                aria-current={pathname.startsWith('/settings') ? 'page' : undefined}
+            >
+                <Icon name="settings" size="20" strokeWidth={pathname.startsWith('/settings') ? '2.5' : '2'} />
+                <span>Settings</span>
+            </a>
+        </nav>
+
+        <p class="mobile-drawer-footnote">
+            Pulse, Stream, and Insight live in the bottom bar.
+        </p>
+        </div>
+    </div>
+{/if}
+
+<main class="min-h-screen relative overflow-x-hidden pt-16 bottom-chrome-pad">
     <div class="max-w-7xl mx-auto">
         {#key $page.url.pathname}
             <div in:fade={{ duration: 300, delay: 150 }} out:fade={{ duration: 150 }} class="flex-1">
@@ -162,79 +349,101 @@
 
 <!-- Persistent Global Bottom Area -->
 <section
-    class="fixed bottom-0 left-0 right-0 z-50 shadow-zen-heavy"
+    bind:this={bottomChromeEl}
+    class="fixed bottom-0 left-0 right-0 z-50 shadow-zen-heavy pb-safe"
 >
     <!-- Toggleable Input Pill -->
-    {#if isInputVisible}
-        <div transition:slide={{ duration: 300, axis: 'y' }} class="relative bg-zen-surface/90 backdrop-blur-3xl pt-6 pb-2 border-t border-zen-herb/10">
-            <InputPill onInput={(text: string) => { handleNewInput(text); isInputVisible = false; }} />
+    {#if $isCaptureInputVisible && !isReviewOpen && !$isEditingTransaction}
+        <div
+            id="global-input-sheet"
+            transition:slide={{ duration: 300, axis: 'y' }}
+            class="relative bg-zen-panel pt-6 pb-2 border-t border-zen-herb/10"
+        >
+            <InputPill
+                autoFocusOnMount={true}
+                onInput={handleInputFromFab}
+                onExtrasChange={(open: boolean) => (inputHasExtras = open)}
+                restoreText={pendingInput}
+                restoreNonce={inputRestoreNonce}
+            />
         </div>
     {/if}
 
-    <div class="relative bg-zen-surface/70 backdrop-blur-3xl">
-        <!-- Background Gradient for readability -->
-        <div class="absolute inset-0 bg-gradient-to-t from-zen-surface to-transparent pointer-events-none -top-12 h-12"></div>
-        
+    <div class="relative bg-zen-panel border-t border-zen-herb/10">
         <nav
-            class="border-t border-zen-herb/10 h-20 flex items-center justify-around px-2 mb-safe relative"
+            class="h-20 flex items-center justify-around px-2 relative"
         >
             <!-- Pulse -->
             <a
                 href="/"
-                class="flex-1 flex flex-col items-center {String($page.url.pathname) === '/' ? 'text-zen-sage font-bold' : 'text-zen-herb opacity-40'} transition-all active:scale-90"
+                class="bottom-nav-tab flex-1 active:scale-90"
                 aria-label="Pulse Dashboard"
+                aria-current={isNavActive('pulse') ? 'page' : undefined}
             >
-                <Icon name="home" size="24" />
-                <span class="text-[9px] uppercase tracking-tighter mt-1">Pulse</span>
+                <span class="bottom-nav-tab__indicator" aria-hidden="true"></span>
+                <Icon name="home" size="24" strokeWidth={isNavActive('pulse') ? '2.5' : '2'} />
+                <span class="bottom-nav-tab__label text-[10px] uppercase tracking-tight mt-1">Pulse</span>
             </a>
             
             <!-- Stream -->
             <a
                 href="/stream"
-                class="flex-1 flex flex-col items-center {String($page.url.pathname).includes('/stream') ? 'text-zen-sage font-bold' : 'text-zen-herb opacity-40'} transition-all active:scale-90"
+                class="bottom-nav-tab flex-1 active:scale-90"
                 aria-label="Transaction Stream"
+                aria-current={isNavActive('stream') ? 'page' : undefined}
             >
-                <Icon name="list" size="24" />
-                <span class="text-[9px] uppercase tracking-tighter mt-1">Stream</span>
+                <span class="bottom-nav-tab__indicator" aria-hidden="true"></span>
+                <Icon name="list" size="24" strokeWidth={isNavActive('stream') ? '2.5' : '2'} />
+                <span class="bottom-nav-tab__label text-[10px] uppercase tracking-tight mt-1">Stream</span>
             </a>
 
             <!-- Protruding FAB -->
             <div class="flex-none -top-8 relative px-4">
                 <button
-                    onclick={() => isInputVisible = !isInputVisible}
-                    class="h-16 w-16 bg-zen-sage text-white rounded-full flex items-center justify-center shadow-zen-heavy hover:scale-105 active:scale-95 transition-all border-4 border-zen-surface group"
-                    aria-label="Add Transaction"
+                    type="button"
+                    onclick={toggleInput}
+                    class="h-16 w-16 bg-zen-sage text-zen-on-primary rounded-full flex items-center justify-center shadow-zen-heavy hover:scale-105 active:scale-95 transition-all border-4 border-zen-panel"
+                    aria-expanded={$isCaptureInputVisible}
+                    aria-controls="global-input-sheet"
+                    aria-label={$isCaptureInputVisible ? "Close transaction input" : "Add transaction"}
                 >
-                    <Icon name="plus" size="32" class_="{isInputVisible ? 'rotate-45' : ''} transition-transform" strokeWidth="2.5" />
+                    <Icon name="plus" size="32" class_="{$isCaptureInputVisible ? 'rotate-45' : ''} transition-transform" strokeWidth="2.5" />
                 </button>
             </div>
 
             <!-- Insight -->
             <a
                 href="/insight"
-                class="flex-1 flex flex-col items-center {String($page.url.pathname).includes('/insight') ? 'text-zen-sage font-bold' : 'text-zen-herb opacity-40'} transition-all active:scale-90"
+                class="bottom-nav-tab flex-1 active:scale-90"
                 aria-label="Monthly Insights"
+                aria-current={isNavActive('insight') ? 'page' : undefined}
             >
-                <Icon name="clock" size="24" />
-                <span class="text-[9px] uppercase tracking-tighter mt-1">Insight</span>
+                <span class="bottom-nav-tab__indicator" aria-hidden="true"></span>
+                <Icon name="clock" size="24" strokeWidth={isNavActive('insight') ? '2.5' : '2'} />
+                <span class="bottom-nav-tab__label text-[10px] uppercase tracking-tight mt-1">Insight</span>
             </a>
 
             <!-- Settings -->
             <a
                 href="/settings"
-                class="flex-1 flex flex-col items-center {String($page.url.pathname).includes('/settings') || String($page.url.pathname).includes('/purposes') || String($page.url.pathname).includes('/parties') ? 'text-zen-sage font-bold' : 'text-zen-herb opacity-40'} transition-all active:scale-90"
+                class="bottom-nav-tab flex-1 active:scale-90"
                 aria-label="Settings"
+                aria-current={isNavActive('settings') ? 'page' : undefined}
             >
-                <Icon name="settings" size="24" />
-                <span class="text-[9px] uppercase tracking-tighter mt-1">Settings</span>
+                <span class="bottom-nav-tab__indicator" aria-hidden="true"></span>
+                <Icon name="settings" size="24" strokeWidth={isNavActive('settings') ? '2.5' : '2'} />
+                <span class="bottom-nav-tab__label text-[10px] uppercase tracking-tight mt-1">Settings</span>
             </a>
         </nav>
     </div>
 </section>
 
-<ParserModal
-    isOpen={isModalOpen}
-    originalText={pendingInput}
-    onClose={() => (isModalOpen = false)}
-    onSelect={handleModalSelect}
-/>
+{#if pendingDraft && pendingAssessment}
+    <CaptureReviewSheet
+        isOpen={isReviewOpen}
+        draft={pendingDraft}
+        assessment={pendingAssessment}
+        onConfirm={handleReviewConfirm}
+        onCancel={handleReviewCancel}
+    />
+{/if}

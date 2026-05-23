@@ -36,7 +36,7 @@
 <div class="space-y-6 pb-12">
     <!-- Main Wealth Overview -->
     <div 
-        class="bg-gradient-to-br from-zen-sage to-zen-herb rounded-3xl p-8 text-white shadow-zen-soft relative overflow-hidden"
+        class="bg-gradient-to-br from-zen-sage to-zen-herb rounded-3xl p-8 text-zen-on-primary shadow-zen-soft relative overflow-hidden"
         in:fly={{ y: 20, duration: 800 }}
     >
         <div class="relative z-10 flex flex-col items-center text-center">
@@ -45,10 +45,10 @@
                 {formatAmountShort(global.balance)}
             </h2>
             
-            <div class="grid grid-cols-2 gap-8 w-full max-w-xs mt-4 pt-6 border-t border-white/10">
+            <div class="grid grid-cols-2 gap-8 w-full max-w-xs mt-4 pt-6 border-t border-zen-on-primary/10">
                 <div class="flex flex-col">
                     <span class="text-[9px] uppercase font-bold opacity-60 mb-1">Cash at Hand</span>
-                    <span class="text-lg font-bold tabular-nums">{formatAmountShort(global.cashAtHand)}</span>
+                    <span class="text-lg font-bold tabular-nums">{formatAmountShort(global.netPosition)}</span>
                 </div>
                 <div class="flex flex-col">
                     <span class="text-[9px] uppercase font-bold opacity-60 mb-1">Net Flow</span>
@@ -71,10 +71,10 @@
         >
             <div class="flex items-center justify-between border-b border-zen-herb/5 pb-4">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">📈</div>
+                    <div class="w-8 h-8 rounded-lg bg-zen-earn/10 text-zen-earn flex items-center justify-center text-lg">📈</div>
                     <h3 class="text-zen-sage font-heading font-bold">Owed to Me</h3>
                 </div>
-                <span class="text-emerald-600 font-bold tabular-nums">{formatAmount(global.receivables)}</span>
+                <span class="text-zen-earn font-bold tabular-nums">{formatAmount(global.receivables)}</span>
             </div>
 
             <div class="space-y-3 max-h-[250px] overflow-y-auto no-scrollbar">
@@ -86,7 +86,7 @@
                             <div class="flex items-center gap-3">
                                 <span class="text-xl opacity-80">{item.party?.emoji || '👤'}</span>
                                 <div>
-                                    <p class="text-sm font-bold text-zen-sage group-hover:text-emerald-600 transition-colors">{item.party?.name || 'Unknown'}</p>
+                                    <p class="text-sm font-bold text-zen-sage group-hover:text-zen-earn transition-colors">{item.party?.name || 'Unknown'}</p>
                                     <p class="text-[9px] uppercase font-bold text-zen-herb/40 tracking-wider">Due from</p>
                                 </div>
                             </div>
@@ -137,8 +137,8 @@
         in:fade={{ delay: 600 }}
     >
         <p class="text-xs text-zen-herb font-medium leading-relaxed max-w-sm mx-auto">
-            You currently hold <span class="text-zen-sage font-bold">{formatAmountShort(global.cashAtHand)}</span> in liquid cash.
-            Including all pending <span class="text-emerald-600 font-bold">{formatAmount(global.receivables)}</span> receivables and 
+            You currently hold <span class="text-zen-sage font-bold">{formatAmountShort(global.netPosition)}</span> in liquid cash.
+            Including all pending <span class="text-zen-earn font-bold">{formatAmount(global.receivables)}</span> receivables and 
             <span class="text-zen-spend font-bold">{formatAmount(global.payables)}</span> payables, your total wealth position is 
             <span class="text-zen-sage font-black">{formatAmountShort(global.balance)}</span>.
         </p>
