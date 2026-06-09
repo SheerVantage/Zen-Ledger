@@ -111,6 +111,8 @@ function weeklySpendingTrend(
   const thisWeekTotal = thisWeekExpenses.reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
   const lastWeekTotal = lastWeekExpenses.reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
 
+  if (lastWeekTotal === 0) return null;
+
   const change = ((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100;
   const direction = change > 0 ? 'up' : 'down';
   const absChange = Math.abs(change).toFixed(0);
@@ -196,8 +198,9 @@ function noSpendStreak(
   const expenseDates = new Set(expenses.map(tx => tx.date));
   let streak = 0;
   let currentDate = new Date();
+  const maxDays = 365;
 
-  while (true) {
+  for (let i = 0; i < maxDays; i++) {
     const dateStr = currentDate.toISOString().split('T')[0];
     if (expenseDates.has(dateStr)) break;
     streak++;
