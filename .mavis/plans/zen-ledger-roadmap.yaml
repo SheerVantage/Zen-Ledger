@@ -1,0 +1,173 @@
+﻿version: 1
+plan:
+  name: "Zen Ledger Planned Features"
+  max_concurrency: 3
+  max_consecutive_failures: 2
+  max_cycles: 8
+
+tasks:
+  - id: track-a-stream
+    title: "Stream UX — swipe-to-reveal + skeleton + end-of-list"
+    assigned_to: coder
+    verified_by: verifier
+    prompt: |
+      Implement the following three features in the Zen Ledger SvelteKit project at E:\UwAmp\www\Personal_Projects\Zen Ledger. All changes must respect the existing Zen design system (zen-oat/sage/herb palette, Quicksand/Nunito fonts, no Lucide icons, custom Icon.svelte only).
+
+      === Feature 1: Swipe-to-reveal Edit/Delete on Stream ===
+
+      Add swipe-to-reveal functionality to TransactionCard on the Stream page.
+      - On touch/swipe left, reveal two action buttons: Edit (zen-sage) and Delete (zen-spend)
+      - Threshold: 80px swipe to reveal, 160px to auto-trigger on release
+      - Use CSS transform: translateX for the slide. Do NOT use a library.
+      - On swipe right or tap outside, collapse.
+      - The revealed buttons should call the existing edit/delete handlers from TransactionCard.
+      - Ensure the card remains tappable (swipe doesn't interfere with tap-to-expand).
+      - Style the revealed panel with bg-zen-panel, the same rounded-zen as the card.
+      - Add to tests/stream.test.ts a Playwright test: swipe a card left, verify reveal panel appears.
+
+      === Feature 2: Skeleton loading on Stream ===
+
+      When transactions store is empty (loading state), show 3 skeleton cards before data arrives.
+      - Create a SkeletonCard.svelte component using animated shimmer (bg-zen-herb/10 → bg-zen-herb/20 pulse).
+      - Add a loading state to the stream page derived from whether transactions have loaded.
+      - Keep existing empty state ("Quiet stream") as-is.
+      - Shimmer animation: CSS keyframe with subtle opacity pulse, not a spinner.
+      - Skeleton card should approximate the layout of TransactionCard (narration line, amount line, purpose line).
+
+      === Feature 3: End-of-list state ===
+
+      At the bottom of the transaction list on Stream page, add a warm end-of-list message:
+      - If list is non-empty: show "That's everything for now. 🌿" in zen-caption-muted italic style
+      - Already exists in the code but verify it appears after the last date group.
+      - Add a subtle divider line above it (bg-zen-herb/10, full width).
+
+      Important constraints:
+      - Do NOT add any external icon libraries (no lucide, no heroicons).
+      - Do NOT change the layout.css design tokens.
+      - Keep existing animations (fly, slide, fade from svelte/transition).
+      - All new components go in src/lib/components/.
+
+  - id: track-b-insight
+    title: "Insight polish — empty state, date presets, dynamic narratives"
+    assigned_to: coder
+    verified_by: verifier
+    prompt: |
+      Implement the following three features in the Zen Ledger SvelteKit project at E:\UwAmp\www\Personal_Projects\Zen Ledger. Respect the Zen design system (zen-oat/sage/herb palette, Quicksand/Nunito fonts, no Lucide icons, custom Icon.svelte only).
+
+      === Feature 1: Gathering wisdom empty state on Insight ===
+
+      Currently the story cards on Insight are static (3 hardcoded cards). Before rendering the cards,
+      check if there are any transactions in the store. If zero transactions, replace the story card area with:
+      - Large leaf emoji: 🍃
+      - Heading: "Gathering wisdom..."
+      - Subtext: "Log your first transaction to unlock personalized insights."
+      - Style: centered, zen-herb text, max-w-xs mx-auto, text-sm font-body font-semibold
+      - Animate with fade in.
+
+      === Feature 2: Date range presets on Insight ===
+
+      Add quick-select preset buttons above the existing date range picker on Insight.
+      - Presets: "This Week", "This Month", "Last 30 Days", "This Year"
+      - Style: small rounded-full chips (zen-chip style matching Stream page filter chips)
+      - Clicking a preset auto-fills the summaryDateStart and summaryDateEnd date inputs
+      - "This Month" is selected by default (current behavior)
+      - Place above the existing date inputs, in a flex row with overflow-x-auto
+
+      === Feature 3: Dynamic Insight narratives ===
+
+      Replace the 3 static story cards with data-driven cards. Keep the same tap-through UI (fly animation, dots indicator).
+      Generate narratives based on real transaction data:
+
+      Card generation rules (in order of priority):
+      1. If total expenses > total earnings → "Spending ahead of income" card with emoji 📊
+      2. If expenses decreased vs previous period → "Spending down X%" with emoji 🥗
+      3. If earnings increased vs previous period → "Income up X%" with emoji 📈
+      4. If there are open receivables → "X in receivables outstanding" with emoji 💰
+      5. If there are open payables → "X in payables pending" with emoji 📉
+      6. If no transactions this month → "First transaction will unlock insights"
+      7. Default: "All clear. No red flags this period." with emoji 🌿
+
+      Amounts should use formatAmountShort from $lib/utils/formatters.
+      Generate up to 4 cards max (show max 4). If fewer, show what's available.
+      All amounts shown should use the user's currency from settings store.
+
+      Card structure (same as existing):
+      - emoji (large, top)
+      - title (zen-sage font-heading font-extrabold text-3xl)
+      - description (zen-sage/80 font-body font-bold text-xl)
+      - color bg (zen-earn/20 or zen-sage/10 or zen-almond/20 based on type)
+      - dots indicator (same as existing)
+
+      Important constraints:
+      - Do NOT use external icon libraries.
+      - Keep the fly animation (in:fly={{ x: 300 }} out:fly={{ x: -300 }})
+      - Card count dot indicator must match actual number of dynamic cards.
+      - Use $derived for reactive card generation (re-compute when transactions change).
+
+  - id: track-c-capture
+    title: "Capture flow + card improvements — auto-settlement, planning horizon, prospect promotion"
+    assigned_to: coder
+    verified_by: verifier
+    prompt: |
+      Implement the following three features in the Zen Ledger SvelteKit project at E:\UwAmp\www\Personal_Projects\Zen Ledger. Respect the Zen design system.
+
+      === Feature 1: Auto-settlement prompt ===
+
+      After a transaction is saved (via commitParsedTransaction in submitTransaction.ts), check if
+      the saved transaction is an earning (accountType=earning/recovered) or expense (accountType=expense/repaid)
+      that matches an open receivable or payable for the same party.
+
+      Implementation:
+      - After showCaptureSuccess(id) is called in commitParsedTransaction, run a check.
+      - Find transactions where: purposeId is earning/recovered AND partyId matches AND status is not completed
+        AND accountType is receivable for that party.
+      - Also check the reverse: for expense/repaid, look for open payables.
+      - If a match is found, show a secondary toast message (different from the success toast):
+        "Auto-detected open receivable from {partyName}. Settle now?" with a "Settle" action button.
+      - The settle action should call the existing settleTransaction() from the transactions store.
+      - Use a separate store (e.g., a new writable in feedback.ts called autoSettlementPrompt)
+        to control this toast, with its own timer (auto-dismiss after 6s if not acted on).
+      - Only prompt if the partyId exists on the new transaction.
+
+      === Feature 2: Planning horizon toggle on Pulse ===
+
+      In the "Financial details" expander on the Pulse page (+page.svelte), add a sub-section below
+      the existing Planning/Loans cards:
+
+      - Label: "PLANNING HORIZON" (zen-micro-label style, uppercase tracking-widest)
+      - A toggle: "7 days" / "30 days" pill buttons (selected = bg-zen-sage, unselected = bg-zen-oat/40)
+      - Below the toggle, show:
+        - "Expected in: {currency}{expectedInflow}" in text-zen-earn
+        - "Expected out: {currency}{expectedOutflow}" in text-zen-spend
+        - "Net: {currency}{net}" in text-zen-sage
+      - The 7-day / 30-day filter should only affect the expectedInflow/expectedOutflow calculation
+        used in this section (not global summaries).
+      - Compute from recurring templates: sum of recurring amounts for templates with next occurrence
+        within the selected window.
+      - Default: 30 days.
+      - Style the section with bg-zen-sage/5 rounded-zen border border-zen-sage/10 p-3.
+
+      === Feature 3: Prospect promotion flow ===
+
+      Improve the "Confirm & Promote" button in TransactionCard.svelte. Currently it just marks
+      the prospect as completed. Instead, open an inline promotion panel that lets the user
+      choose the final category.
+
+      Implementation:
+      - When "Confirm & Promote" is clicked, show an inline panel (slide down) above the action buttons.
+      - The panel shows: "Promote to:" label + a row of category chips (Expense, Earning, Transfer).
+      - Each chip is clickable and styled as a rounded-full pill.
+      - The selected chip gets bg-zen-sage text-zen-on-primary.
+      - Below the chips: "Confirm" button (bg-zen-sage rounded-full, full width).
+      - On confirm: updateTransaction(item.id, { purposeId: <selected category's default purpose> })
+        and set status to completed.
+      - Use existing purposes store to find the default purpose for each account type.
+      - Keep the narration and amount unchanged.
+      - Dismiss the panel on cancel or after promotion.
+      - Style: slide transition, bg-zen-panel rounded-zen p-4, border border-zen-herb/10.
+
+      Important constraints:
+      - Do NOT use external icon libraries.
+      - Reuse existing store functions (settleTransaction, updateTransaction).
+      - All styling must use zen-* token classes from layout.css.
+      - Keep existing transitions and animations.

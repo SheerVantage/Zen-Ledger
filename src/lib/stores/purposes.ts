@@ -1,8 +1,11 @@
-import { writable, derived, get } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import { browser } from '$app/environment';
+import { db } from '$lib/db/database';
 import { isSimilar } from '../utils/similarity';
+import { addToSyncQueue } from '$lib/db/sync-queue';
+import type { AccountType } from '$lib/account-types';
 
-export type AccountType = 'expense' | 'earning' | 'receivable' | 'payable' | 'recovered' | 'repaid' | 'transfer' | 'prospect';
+export type { AccountType } from '$lib/account-types';
 
 export interface Purpose {
     id: string;
@@ -13,8 +16,6 @@ export interface Purpose {
     createdAt: string;
     updatedAt: string;
 }
-
-const STORAGE_KEY = 'zen_ledger_purposes_v1';
 
 const now = new Date().toISOString();
 
@@ -31,70 +32,68 @@ const initialPurposes: Purpose[] = [
     { id: '10', name: 'Prospect', emoji: '🔭', accountType: 'prospect', aliases: ['plan', 'expected', 'future'], createdAt: now, updatedAt: now },
 ];
 
+// Initialize default data if DB is empty
+async function initializeDefaultData() {
+    if (!browser) return;
+    const count = await db.purposes.count();
+    if (count === 0) {
+        await db.purposes.bulkAdd(initialPurposes);
+    }
+}
+
+// Run initialization on module load
+if (browser) {
+    initializeDefaultData();
+}
+
 function createPurposesStore() {
-    const stored = browser ? localStorage.getItem(STORAGE_KEY) : null;
-    let initial = stored ? JSON.parse(stored) : initialPurposes;
+    const { subscribe, set, update } = writable<Purpose[]>([]);
 
-    // Migration: Ensure all existing purposes have timestamps and new default purposes exist
-    let needsMigration = false;
-    
-    // 1. Check for missing default purposes
-    initialPurposes.forEach(defaultP => {
-        if (!initial.find((p: any) => p.accountType === defaultP.accountType && p.name === defaultP.name)) {
-            needsMigration = true;
-            initial.push(defaultP);
-        }
-    });
-
-    initial = initial.map((p: any) => {
-        if (!p.createdAt || !p.updatedAt) {
-            needsMigration = true;
-            return {
-                ...p,
-                createdAt: p.createdAt || now,
-                updatedAt: p.updatedAt || now
-            };
-        }
-        return p;
-    });
-
-    if (needsMigration && browser) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+    // Load initial data from Dexie
+    if (browser) {
+        db.purposes.toArray().then(data => {
+            const sorted = [...data].sort((a, b) => a.name.localeCompare(b.name));
+            set(sorted);
+        });
     }
 
-    const { subscribe, set, update } = writable<Purpose[]>(initial.sort((a: Purpose, b: Purpose) => a.name.localeCompare(b.name)));
-    const persist = (all: Purpose[]) => {
+    const persist = async (all: Purpose[]) => {
         const sorted = [...all].sort((a, b) => a.name.localeCompare(b.name));
-        if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted));
+        set(sorted);
         return sorted;
     };
 
     return {
         subscribe,
-        addPurpose: (purpose: Omit<Purpose, 'id' | 'createdAt' | 'updatedAt'>) => {
-            update(all => {
-                const timestamp = new Date().toISOString();
-                const newPurpose: Purpose = { 
-                    ...purpose, 
-                    id: Math.random().toString(36).substring(2, 9),
-                    createdAt: timestamp,
-                    updatedAt: timestamp
-                };
-                return persist([...all, newPurpose]);
-            });
+        addPurpose: async (purpose: Omit<Purpose, 'id' | 'createdAt' | 'updatedAt'>) => {
+            const timestamp = new Date().toISOString();
+            const newPurpose: Purpose = { 
+                ...purpose, 
+                id: Math.random().toString(36).substring(2, 9),
+                createdAt: timestamp,
+                updatedAt: timestamp
+            };
+            
+            await db.purposes.add(newPurpose);
+            await addToSyncQueue('purposes', newPurpose.id, 'create');
+            
+            const allPurposes = await db.purposes.toArray();
+            await persist(allPurposes);
         },
-        updatePurpose: (id: string, updates: Partial<Purpose>) => {
-            update(all => {
-                const timestamp = new Date().toISOString();
-                const updated = all.map(p => p.id === id ? { ...p, ...updates, updatedAt: timestamp } : p);
-                return persist(updated);
-            });
+        updatePurpose: async (id: string, updates: Partial<Purpose>) => {
+            const timestamp = new Date().toISOString();
+            await db.purposes.update(id, { ...updates, updatedAt: timestamp });
+            await addToSyncQueue('purposes', id, 'update');
+            
+            const allPurposes = await db.purposes.toArray();
+            await persist(allPurposes);
         },
-        deletePurpose: (id: string) => {
-            update(all => {
-                const updated = all.filter(p => p.id !== id);
-                return persist(updated);
-            });
+        deletePurpose: async (id: string) => {
+            await db.purposes.delete(id);
+            await addToSyncQueue('purposes', id, 'delete');
+            
+            const allPurposes = await db.purposes.toArray();
+            await persist(allPurposes);
         },
         getPurposeByName: (name: string, allPurposes: Purpose[]) => {
             const lowerName = name.toLowerCase();
@@ -109,9 +108,12 @@ function createPurposesStore() {
                 p.aliases?.some(a => isSimilar(a, name))
             );
         },
-        importData: (data: Purpose[]) => {
-            set(data);
-            if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        importData: async (data: Purpose[]) => {
+            await db.purposes.clear();
+            await db.purposes.bulkAdd(data);
+            
+            const sorted = [...data].sort((a, b) => a.name.localeCompare(b.name));
+            set(sorted);
         }
     };
 }

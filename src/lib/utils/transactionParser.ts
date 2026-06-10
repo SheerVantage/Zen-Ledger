@@ -21,7 +21,9 @@ export interface ParsedTransactionDraft {
     date: string;
     purposeId: string;
     partyId: string;
-    account: string;
+    fundId: string;
+    fromFundId?: string;
+    toFundId?: string;
     status: 'completed' | 'pending' | 'partial';
     isPassthrough: boolean;
     confidence: 'high' | 'medium' | 'low';
@@ -44,7 +46,7 @@ export function parseTransaction(input: string): ParsedTransactionDraft {
     let date = new Date().toISOString().split('T')[0];
     let purposeId = '';
     let partyId = '';
-    let account = 'cash';
+    let fundId = 'cash';
     let status: 'completed' | 'pending' | 'partial' = 'completed';
     let isPassthrough = false;
     let categoryHint: string | null = null;
@@ -69,9 +71,9 @@ export function parseTransaction(input: string): ParsedTransactionDraft {
         date = relativeDate;
     }
 
-    if (lowerInput.match(/\bbank\b|\bcheque\b|\batm\b|\bdepo/)) account = 'bank';
-    else if (lowerInput.match(/\bbkash\b/)) account = 'bkash';
-    else if (lowerInput.match(/\bnagad\b/)) account = 'nagad';
+    if (lowerInput.match(/\bbank\b|\bcheque\b|\batm\b|\bdepo/)) fundId = 'bank';
+    else if (lowerInput.match(/\bbkash\b/)) fundId = 'bkash';
+    else if (lowerInput.match(/\bnagad\b/)) fundId = 'bkash'; // Default nagad to bkash since it's a mobile wallet
 
     if (lowerInput.match(/pending|accrued|due|to be paid|owed|receive/)) status = 'pending';
     else if (lowerInput.match(/partial|partially/)) status = 'partial';
@@ -91,7 +93,7 @@ export function parseTransaction(input: string): ParsedTransactionDraft {
         isPassthrough = true;
     } else if (lowerInput.match(/transfer|deposited|moved|bank to|cash to|withdrawal/)) {
         categoryHint = 'transfer';
-        if (lowerInput.match(/deposited/)) account = 'bank';
+        if (lowerInput.match(/deposited/)) fundId = 'bank';
     }
 
     const matchedPurposeIds: string[] = [];
@@ -188,7 +190,7 @@ export function parseTransaction(input: string): ParsedTransactionDraft {
         date,
         purposeId,
         partyId,
-        account,
+        fundId,
         status,
         isPassthrough,
         confidence,

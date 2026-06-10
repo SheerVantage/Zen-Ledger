@@ -4,7 +4,7 @@
         type Purpose,
         type AccountType,
     } from "$lib/stores/purposes";
-    import { categories } from "$lib/stores/categories";
+    import { ACCOUNT_TYPES } from "$lib/account-types";
     import { fade, fly } from "svelte/transition";
 
     let newName = $state("");
@@ -109,8 +109,8 @@
                         bind:value={newType}
                         class="w-full bg-zen-oat/30 border border-zen-herb/10 rounded-lg p-2 text-zen-sage outline-none"
                     >
-                        {#each $categories as cat}
-                            <option value={cat.id}>{cat.emoji} {cat.name}</option>
+                        {#each ACCOUNT_TYPES as type}
+                            <option value={type.id}>{type.emoji} {type.name}</option>
                         {/each}
                     </select>
                 </div>

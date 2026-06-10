@@ -1,6 +1,8 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
+import { db } from '$lib/db/database';
 import { isSimilar } from '../utils/similarity';
+import { addToSyncQueue } from '$lib/db/sync-queue';
 
 export interface Party {
     id: string;
@@ -11,8 +13,6 @@ export interface Party {
     updatedAt: string;
 }
 
-const STORAGE_KEY = 'zen_ledger_parties_v1';
-
 const now = new Date().toISOString();
 
 const initialParties: Party[] = [
@@ -22,61 +22,68 @@ const initialParties: Party[] = [
     { id: '4', name: 'Landlord', emoji: '🏠', aliases: ['rent payment', 'apartment'], createdAt: now, updatedAt: now },
 ];
 
+// Initialize default data if DB is empty
+async function initializeDefaultData() {
+    if (!browser) return;
+    const count = await db.parties.count();
+    if (count === 0) {
+        await db.parties.bulkAdd(initialParties);
+    }
+}
+
+// Run initialization on module load
+if (browser) {
+    initializeDefaultData();
+}
+
 function createPartiesStore() {
-    const stored = browser ? localStorage.getItem(STORAGE_KEY) : null;
-    let initial = stored ? JSON.parse(stored) : initialParties;
+    const { subscribe, update, set } = writable<Party[]>([]);
 
-    // Migration: Ensure all existing parties have timestamps
-    let needsMigration = false;
-    initial = initial.map((p: any) => {
-        if (!p.createdAt || !p.updatedAt) {
-            needsMigration = true;
-            return {
-                ...p,
-                createdAt: p.createdAt || now,
-                updatedAt: p.updatedAt || now
-            };
-        }
-        return p;
-    });
-
-    if (needsMigration && browser) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+    // Load initial data from Dexie
+    if (browser) {
+        db.parties.toArray().then(data => {
+            const sorted = [...data].sort((a, b) => a.name.localeCompare(b.name));
+            set(sorted);
+        });
     }
 
-    const { subscribe, update, set } = writable<Party[]>(initial.sort((a: Party, b: Party) => a.name.localeCompare(b.name)));
-    const persist = (all: Party[]) => {
+    const persist = async (all: Party[]) => {
         const sorted = [...all].sort((a, b) => a.name.localeCompare(b.name));
-        if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted));
+        set(sorted);
         return sorted;
     };
 
     return {
         subscribe,
-        addParty: (p: Omit<Party, 'id' | 'createdAt' | 'updatedAt'>) => {
-            update(all => {
-                const timestamp = new Date().toISOString();
-                const newParty: Party = { 
-                    ...p, 
-                    id: Math.random().toString(36).substring(2, 9),
-                    createdAt: timestamp,
-                    updatedAt: timestamp
-                };
-                return persist([...all, newParty]);
-            });
+        addParty: async (p: Omit<Party, 'id' | 'createdAt' | 'updatedAt'>) => {
+            const timestamp = new Date().toISOString();
+            const newParty: Party = { 
+                ...p, 
+                id: Math.random().toString(36).substring(2, 9),
+                createdAt: timestamp,
+                updatedAt: timestamp
+            };
+            
+            await db.parties.add(newParty);
+            await addToSyncQueue('parties', newParty.id, 'create');
+            
+            const allParties = await db.parties.toArray();
+            await persist(allParties);
         },
-        updateParty: (id: string, updates: Partial<Party>) => {
-            update(all => {
-                const timestamp = new Date().toISOString();
-                const updated = all.map(p => p.id === id ? { ...p, ...updates, updatedAt: timestamp } : p);
-                return persist(updated);
-            });
+        updateParty: async (id: string, updates: Partial<Party>) => {
+            const timestamp = new Date().toISOString();
+            await db.parties.update(id, { ...updates, updatedAt: timestamp });
+            await addToSyncQueue('parties', id, 'update');
+            
+            const allParties = await db.parties.toArray();
+            await persist(allParties);
         },
-        deleteParty: (id: string) => {
-            update(all => {
-                const updated = all.filter(p => p.id !== id);
-                return persist(updated);
-            });
+        deleteParty: async (id: string) => {
+            await db.parties.delete(id);
+            await addToSyncQueue('parties', id, 'delete');
+            
+            const allParties = await db.parties.toArray();
+            await persist(allParties);
         },
         getPartyByName: (name: string, allParties: Party[]) => {
             const lowerName = name.toLowerCase();
@@ -91,9 +98,12 @@ function createPartiesStore() {
                 p.aliases?.some(a => isSimilar(a, name))
             );
         },
-        importData: (data: Party[]) => {
-            set(data);
-            if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        importData: async (data: Party[]) => {
+            await db.parties.clear();
+            await db.parties.bulkAdd(data);
+            
+            const sorted = [...data].sort((a, b) => a.name.localeCompare(b.name));
+            set(sorted);
         }
     };
 }

@@ -1,5 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { browser } from '$app/environment';
+import { db } from '$lib/db/database';
 import type { Transaction } from './transactions';
 import type { Purpose } from './purposes';
 
@@ -14,7 +15,7 @@ export interface FinancialSummaries {
         balance: number;
         receivables: number;
         payables: number;
-        netPosition: number; // Renamed from cashAtHand
+        netPosition: number;
     };
     planning: {
         expectedInflow: number;
@@ -35,14 +36,16 @@ export interface UserProfile {
 }
 
 export interface SettingsState {
+    id: string;
     profile: UserProfile;
     summaries: FinancialSummaries;
     lastRecalculated: string;
 }
 
-const STORAGE_KEY = 'zen_ledger_settings_v1';
+const SETTINGS_ID = 'default';
 
 const initialSettings: SettingsState = {
+    id: SETTINGS_ID,
     profile: {
         name: 'User',
         currency: '৳',
@@ -65,20 +68,43 @@ const initialSettings: SettingsState = {
     lastRecalculated: new Date().toISOString()
 };
 
-function createSettingsStore() {
-    const stored = browser ? localStorage.getItem(STORAGE_KEY) : null;
-    const initial = stored ? JSON.parse(stored) : initialSettings;
+// Initialize default settings if DB is empty
+async function initializeDefaultData() {
+    if (!browser) return;
+    const count = await db.settings.count();
+    if (count === 0) {
+        await db.settings.add(initialSettings);
+    }
+}
 
-    const { subscribe, set, update } = writable<SettingsState>(initial);
+// Run initialization on module load
+if (browser) {
+    initializeDefaultData();
+}
+
+function createSettingsStore() {
+    const { subscribe, set, update } = writable<SettingsState>(initialSettings);
+
+    // Load initial data from Dexie
+    if (browser) {
+        db.settings.get(SETTINGS_ID).then(data => {
+            if (data) {
+                set(data);
+            }
+        });
+    }
+
+    const persist = async (state: SettingsState) => {
+        await db.settings.put(state);
+        set(state);
+    };
 
     return {
         subscribe,
-        updateProfile: (updates: Partial<UserProfile>) => {
-            update(s => {
-                const updated = { ...s, profile: { ...s.profile, ...updates } };
-                if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-                return updated;
-            });
+        updateProfile: async (updates: Partial<UserProfile>) => {
+            const current = get({ subscribe });
+            const updated = { ...current, profile: { ...current.profile, ...updates } };
+            await persist(updated);
         },
         recalculate: (transactions: Transaction[], purposes: Purpose[]) => {
             const partySummaries: Record<string, PartySummary> = {};
@@ -95,11 +121,10 @@ function createSettingsStore() {
             
             let netReceivables = 0;
             let netPayables = 0;
-            let netPosition = 0; // Liquid cash (cash + bank + etc)
+            let netPosition = 0;
             let totalIncome = 0;
             let totalExpense = 0;
 
-            // Map transactions for quick lookup (for settlement tracking)
             const settlementMap: Record<string, number> = {};
             transactions.forEach(t => {
                 if (t.linkedTo) {
@@ -123,30 +148,22 @@ function createSettingsStore() {
                         planning.expectedOutflow += amount;
                         planning.byConfidence[conf].outflow += amount;
                     }
-                    return; // Prospects don't affect actual balances
-                }
-
-                if (type === 'transfer') {
-                    // Internal movement — net impact on total liquid cash is 0
-                    // But we could track account-wise balances here if needed
                     return;
                 }
 
-                // Calculate liquid flow
+                if (type === 'transfer') {
+                    return;
+                }
+
                 const isLiquidIn = ['earning', 'recovered', 'payable'].includes(type);
                 const isLiquidOut = ['expense', 'repaid', 'receivable'].includes(type);
 
-                // Passthrough transactions affect cash position but are often neutral eventually
                 if (isLiquidIn) netPosition += amount;
                 if (isLiquidOut) netPosition -= amount;
-
-                // For global balance (Net Worth), passthrough should ideally be neutral if paired
-                // but if we have an uncleared passthrough, it *is* part of our cash.
                 
                 if (type === 'earning' && !t.isPassthrough) totalIncome += amount;
                 if (type === 'expense' && !t.isPassthrough) totalExpense += amount;
 
-                // Handle Accruals (Receivables/Payables)
                 if (type === 'receivable' || type === 'payable') {
                     const settledAmount = settlementMap[t.id] || 0;
                     const outstanding = Math.max(0, amount - settledAmount);
@@ -157,7 +174,6 @@ function createSettingsStore() {
                             if (!partySummaries[partyId]) partySummaries[partyId] = { balance: 0, receivables: 0, payables: 0 };
                             partySummaries[partyId].receivables += outstanding;
                         }
-                        // Broadened detection: any receivable is 'loaned out' in this context
                         loans.loanedOut += outstanding;
                     } else {
                         netPayables += outstanding;
@@ -165,38 +181,37 @@ function createSettingsStore() {
                             if (!partySummaries[partyId]) partySummaries[partyId] = { balance: 0, receivables: 0, payables: 0 };
                             partySummaries[partyId].payables += outstanding;
                         }
-                        // Broadened detection: any payable is 'borrowed'
                         loans.borrowed += outstanding;
                     }
                 }
             });
 
-            // Finalize party summaries
             Object.keys(partySummaries).forEach(pid => {
                 partySummaries[pid].balance = partySummaries[pid].receivables - partySummaries[pid].payables;
             });
 
             const globalBalance = netPosition + netReceivables - netPayables;
 
-            update(s => {
-                const updated = {
-                    ...s,
-                    summaries: {
-                        global: {
-                            balance: globalBalance,
-                            receivables: netReceivables,
-                            payables: netPayables,
-                            netPosition: netPosition
-                        },
-                        planning,
-                        loans,
-                        partyWise: partySummaries
+            const current = get({ subscribe });
+            const updated: SettingsState = {
+                ...current,
+                summaries: {
+                    global: {
+                        balance: globalBalance,
+                        receivables: netReceivables,
+                        payables: netPayables,
+                        netPosition: netPosition
                     },
-                    lastRecalculated: new Date().toISOString()
-                };
-                if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-                return updated;
-            });
+                    planning,
+                    loans,
+                    partyWise: partySummaries
+                },
+                lastRecalculated: new Date().toISOString()
+            };
+            
+            // Persist to Dexie (fire and forget for performance)
+            db.settings.put(updated);
+            set(updated);
         }
     };
 }

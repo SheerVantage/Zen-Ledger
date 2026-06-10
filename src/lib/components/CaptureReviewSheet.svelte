@@ -4,7 +4,8 @@
     import { get } from 'svelte/store';
     import { purposes, type AccountType } from '$lib/stores/purposes';
     import { parties } from '$lib/stores/parties';
-    import { categories } from '$lib/stores/categories';
+    import { funds } from '$lib/stores/funds';
+    import { ACCOUNT_TYPES } from '$lib/account-types';
     import type { ParsedTransactionDraft } from '$lib/utils/transactionParser';
     import type { ParseAssessment, ReviewField } from '$lib/utils/parseConfidence';
     import type { TransactionSubmitOverrides } from '$lib/utils/submitTransaction';
@@ -27,9 +28,37 @@
     let date = $state('');
     let purposeId = $state('');
     let partyId = $state('');
-    let account = $state('cash');
+    let fundId = $state('cash');
+    let fromFundId = $state('cash');
+    let toFundId = $state('bank');
     let status = $state<'completed' | 'pending' | 'partial'>('completed');
     let amountError = $state('');
+    let sheetEl = $state<HTMLElement | null>(null);
+
+    function handleKeydown(e: KeyboardEvent) {
+        if (e.key === 'Escape') {
+            onCancel();
+            return;
+        }
+        if (e.key !== 'Tab' || !sheetEl) return;
+        const focusable = sheetEl.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+            if (document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            }
+        } else {
+            if (document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        }
+    }
 
     let isAddingPurpose = $state(false);
     let isAddingParty = $state(false);
@@ -37,15 +66,15 @@
     let newPurposeType = $state<AccountType>('expense');
     let newPartyName = $state('');
 
-    const accountOptions = ['cash', 'bank', 'bkash', 'nagad'] as const;
-
     $effect(() => {
         if (!isOpen) return;
         amount = draft.amount;
         date = draft.date;
         purposeId = draft.purposeId;
         partyId = draft.partyId || '';
-        account = draft.account || 'cash';
+        fundId = draft.fundId || 'cash';
+        fromFundId = draft.fromFundId || 'cash';
+        toFundId = draft.toFundId || 'bank';
         status = draft.status || 'completed';
         amountError = '';
         isAddingPurpose = false;
@@ -124,32 +153,37 @@
             date,
             purposeId,
             partyId: partyId || undefined,
-            account,
+            fundId,
+            fromFundId,
+            toFundId,
             status,
             isPassthrough: draft.isPassthrough,
             confidence: draft.confidence,
             expectedDate: draft.expectedDate,
             prospectType: draft.prospectType as TransactionSubmitOverrides['prospectType'],
+            showToast: true,
         });
     }
 </script>
 
 {#if isOpen}
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
         class="fixed inset-0 bg-zen-oat/50 z-[100]"
         transition:fade={{ duration: 200 }}
         onclick={onCancel}
+        onkeydown={(e) => e.key === 'Escape' && onCancel()}
         aria-hidden="true"
     ></div>
 
     <div
+        bind:this={sheetEl}
         role="dialog"
+        tabindex="-1"
         aria-modal="true"
         aria-labelledby="capture-review-title"
         class="fixed bottom-0 left-0 right-0 bg-zen-panel border-t border-zen-hairline rounded-t-[2.5rem] shadow-zen-heavy z-[101] p-6 pb-sheet max-w-lg mx-auto max-h-[85dvh] overflow-y-auto"
         transition:fly={{ y: 420, duration: 320, easing: cubicOut }}
+        onkeydown={handleKeydown}
     >
         <div class="w-12 h-1.5 bg-zen-herb/40 rounded-full mx-auto mb-5"></div>
 
@@ -197,8 +231,8 @@
                             class="review-input"
                         />
                         <select bind:value={newPurposeType} class="review-input">
-                            {#each $categories as cat}
-                                <option value={cat.id}>{cat.emoji} {cat.name}</option>
+                            {#each ACCOUNT_TYPES as type}
+                                <option value={type.id}>{type.emoji} {type.name}</option>
                             {/each}
                         </select>
                         <div class="flex gap-2">
@@ -251,18 +285,46 @@
             </div>
 
             <div class={fieldClass('account')}>
-                <span class="zen-field-label">Account</span>
-                <div class="flex flex-wrap gap-2 mt-1">
-                    {#each accountOptions as option}
-                        <button
-                            type="button"
-                            class="review-chip {account === option ? 'review-chip--active' : ''}"
-                            onclick={() => (account = option)}
-                        >
-                            {option}
-                        </button>
-                    {/each}
-                </div>
+                <span class="zen-field-label">Fund</span>
+                {#if selectedPurpose?.accountType === 'transfer'}
+                    <div class="space-y-2 mt-1">
+                        <div class="flex flex-wrap gap-2">
+                            {#each $funds as fund}
+                                <button
+                                    type="button"
+                                    class="review-chip {fromFundId === fund.id ? 'review-chip--active' : ''}"
+                                    onclick={() => (fromFundId = fund.id)}
+                                >
+                                    {fund.emoji} {fund.name}
+                                </button>
+                            {/each}
+                        </div>
+                        <p class="text-[9px] text-zen-herb uppercase tracking-wider text-center">→ to →</p>
+                        <div class="flex flex-wrap gap-2">
+                            {#each $funds as fund}
+                                <button
+                                    type="button"
+                                    class="review-chip {toFundId === fund.id ? 'review-chip--active' : ''}"
+                                    onclick={() => (toFundId = fund.id)}
+                                >
+                                    {fund.emoji} {fund.name}
+                                </button>
+                            {/each}
+                        </div>
+                    </div>
+                {:else}
+                    <div class="flex flex-wrap gap-2 mt-1">
+                        {#each $funds as fund}
+                            <button
+                                type="button"
+                                class="review-chip {fundId === fund.id ? 'review-chip--active' : ''}"
+                                onclick={() => (fundId = fund.id)}
+                            >
+                                {fund.emoji} {fund.name}
+                            </button>
+                        {/each}
+                    </div>
+                {/if}
             </div>
 
             {#if showStatus}

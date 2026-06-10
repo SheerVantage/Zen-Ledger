@@ -43,7 +43,7 @@ export function assessParseConfidence(
     }
 
     if (meta.purposeMatchCount > 1) {
-        reasons.push({ id: 'R6', field: 'purpose', message: 'Multiple categories possible' });
+        reasons.push({ id: 'R6', field: 'purpose', message: 'Multiple types possible' });
     }
 
     if (meta.categoryHint && COMPLEX_HINTS.has(meta.categoryHint)) {

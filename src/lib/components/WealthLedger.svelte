@@ -1,12 +1,57 @@
 <script lang="ts">
     import { settings } from "$lib/stores/settings";
     import { parties } from "$lib/stores/parties";
+    import { funds } from "$lib/stores/funds";
+    import { transactions } from "$lib/stores/transactions";
+    import { purposes } from "$lib/stores/purposes";
+    import { user } from "$lib/stores/auth";
+    import { authModalTrigger } from "$lib/stores/auth-modal";
     import { fade, fly, slide } from "svelte/transition";
     import { formatAmount, formatAmountShort } from "$lib/utils/formatters";
+    import Icon from "$lib/components/Icon.svelte";
 
     const summaries = $derived($settings.summaries);
     const global = $derived(summaries.global);
     const partyWise = $derived(summaries.partyWise);
+
+    // Per-fund balances
+    const fundBalances = $derived.by(() => {
+        const balances: Record<string, number> = {};
+        $funds.forEach(f => { balances[f.id] = 0; });
+        
+        $transactions.forEach(tx => {
+            const purpose = $purposes.find(p => p.id === tx.purposeId);
+            const accountType = purpose?.accountType || 'expense';
+            
+            if (tx.fromFundId && tx.toFundId) {
+                // Transfer: subtract from source, add to destination
+                if (balances[tx.fromFundId] !== undefined) {
+                    balances[tx.fromFundId] -= Math.abs(tx.amount);
+                }
+                if (balances[tx.toFundId] !== undefined) {
+                    balances[tx.toFundId] += Math.abs(tx.amount);
+                }
+            } else if (tx.fundId) {
+                // Regular transaction
+                if (balances[tx.fundId] === undefined) {
+                    balances[tx.fundId] = 0;
+                }
+                if (accountType === 'expense' || accountType === 'payable' || accountType === 'repaid') {
+                    balances[tx.fundId] -= Math.abs(tx.amount);
+                } else if (accountType === 'earning' || accountType === 'receivable' || accountType === 'recovered') {
+                    balances[tx.fundId] += Math.abs(tx.amount);
+                }
+            }
+        });
+        
+        return $funds
+            .map(f => ({
+                ...f,
+                balance: balances[f.id] || 0
+            }))
+            .filter(f => Math.abs(f.balance) > 0.01 || f.id === 'cash') // Always show cash
+            .sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance));
+    });
 
     // Filter parties with meaningful balances
     const receivableParties = $derived(
@@ -60,6 +105,31 @@
         <!-- Abstract Background Shapes -->
         <div class="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
         <div class="absolute -bottom-12 -left-12 w-48 h-48 bg-black/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Per-Fund Breakdown -->
+    <div 
+        class="bg-zen-panel rounded-2xl p-6 border border-zen-herb/5 shadow-sm"
+        in:fly={{ y: 20, delay: 200, duration: 600 }}
+    >
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-zen-sage font-heading font-bold">By Fund</h3>
+            <span class="text-[9px] uppercase font-bold text-zen-herb/40 tracking-wider">{fundBalances.length} funds</span>
+        </div>
+        
+        <div class="space-y-3">
+            {#each fundBalances as fund}
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">{fund.emoji}</span>
+                        <p class="text-sm font-bold text-zen-sage">{fund.name}</p>
+                    </div>
+                    <span class="text-sm font-black tabular-nums {fund.balance >= 0 ? 'text-zen-sage' : 'text-zen-spend'}">
+                        {formatAmount(fund.balance)}
+                    </span>
+                </div>
+            {/each}
+        </div>
     </div>
 
     <!-- Ledger Details -->

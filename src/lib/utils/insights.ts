@@ -89,7 +89,7 @@ function topSpendingCategory(
     title: `Top Spending: ${purpose.name}`,
     description: `You spent ${formatAmountShort(topAmount)} on ${purpose.name} — your biggest category.`,
     emoji: purpose.emoji,
-    color: 'bg-zen-expense/20',
+    color: 'bg-zen-spend/20',
     priority: 90
   };
 }
@@ -150,7 +150,7 @@ function savingsRate(
     title: `Savings Rate`,
     description: `You're saving ${rateStr}% of your income this month.`,
     emoji: rate >= 20 ? '🎉' : '💰',
-    color: rate >= 20 ? 'bg-zen-earn/20' : 'bg-amber-500/20',
+    color: rate >= 20 ? 'bg-zen-earn/20' : 'bg-zen-almond/30',
     priority: 85
   };
 }
@@ -178,7 +178,7 @@ function largestExpense(
     title: `Largest Expense`,
     description: `${formatAmountShort(largest.amount)} on ${purpose?.name || 'Unknown'}${largest.narration ? `: ${largest.narration}` : ''}`,
     emoji: '💸',
-    color: 'bg-zen-expense/20',
+    color: 'bg-zen-spend/20',
     priority: 75
   };
 }
@@ -224,28 +224,28 @@ function accountDistribution(
 ): InsightStory | null {
   if (txs.length < 3) return null;
 
-  const accountCounts = new Map<string, number>();
+  const fundCounts = new Map<string, number>();
   txs.forEach(tx => {
-    const account = tx.account || 'cash';
-    accountCounts.set(account, (accountCounts.get(account) || 0) + 1);
+    const fund = tx.fundId || 'cash';
+    fundCounts.set(fund, (fundCounts.get(fund) || 0) + 1);
   });
 
-  let topAccount = 'cash';
+  let topFund = 'cash';
   let topCount = 0;
-  accountCounts.forEach((count, account) => {
+  fundCounts.forEach((count, fund) => {
     if (count > topCount) {
       topCount = count;
-      topAccount = account;
+      topFund = fund;
     }
   });
 
   const percentage = ((topCount / txs.length) * 100).toFixed(0);
 
   return {
-    title: `Preferred Method`,
-    description: `${percentage}% of transactions use ${topAccount}.`,
+    title: `Preferred Fund`,
+    description: `${percentage}% of transactions use ${topFund}.`,
     emoji: '💳',
-    color: 'bg-blue-500/20',
+    color: 'bg-zen-sage/20',
     priority: 60
   };
 }

@@ -8,7 +8,8 @@
     } from "$lib/stores/transactions";
     import { purposes, type Purpose, type AccountType } from "$lib/stores/purposes";
     import { parties, type Party } from "$lib/stores/parties";
-    import { categories } from "$lib/stores/categories";
+    import { funds } from "$lib/stores/funds";
+    import { ACCOUNT_TYPES } from "$lib/account-types";
     import { slide, fade } from "svelte/transition";
     import { tick } from "svelte";
     import Icon from "$lib/components/Icon.svelte";
@@ -382,13 +383,18 @@
             </div>
         </div>
         
-        {#if item.account}
+        {#if item.fundId || item.fromFundId}
             <div class="mt-2 px-1 flex items-center gap-1.5 opacity-40">
-                <span class="text-[8px] font-black uppercase tracking-tighter text-zen-herb">Account</span>
-                <span class="text-[8px] font-bold text-zen-sage px-1.5 py-0.5 bg-zen-herb/5 rounded-md">{item.account}</span>
-                {#if item.toAccount}
+                <span class="text-[8px] font-black uppercase tracking-tighter text-zen-herb">Fund</span>
+                {#if item.fromFundId && item.toFundId}
+                    {@const fromFund = $funds.find(f => f.id === item.fromFundId)}
+                    {@const toFund = $funds.find(f => f.id === item.toFundId)}
+                    <span class="text-[8px] font-bold text-zen-sage px-1.5 py-0.5 bg-zen-herb/5 rounded-md">{fromFund?.emoji || ''} {fromFund?.name || item.fromFundId}</span>
                     <span class="text-[8px] opacity-40">→</span>
-                    <span class="text-[8px] font-bold text-zen-sage px-1.5 py-0.5 bg-zen-herb/5 rounded-md">{item.toAccount}</span>
+                    <span class="text-[8px] font-bold text-zen-sage px-1.5 py-0.5 bg-zen-herb/5 rounded-md">{toFund?.emoji || ''} {toFund?.name || item.toFundId}</span>
+                {:else}
+                    {@const fund = $funds.find(f => f.id === item.fundId)}
+                    <span class="text-[8px] font-bold text-zen-sage px-1.5 py-0.5 bg-zen-herb/5 rounded-md">{fund?.emoji || ''} {fund?.name || item.fundId || 'cash'}</span>
                 {/if}
             </div>
         {/if}
@@ -469,8 +475,8 @@
                                             bind:value={newPurposeType}
                                             class="w-full bg-zen-input border border-zen-herb/20 rounded-lg px-3 py-1 text-xs text-zen-sage"
                                         >
-                                            {#each $categories as cat}
-                                                <option value={cat.id}>{cat.emoji} {cat.name}</option>
+                                            {#each ACCOUNT_TYPES as type}
+                                                <option value={type.id}>{type.emoji} {type.name}</option>
                                             {/each}
                                         </select>
                                         <div class="flex gap-1">

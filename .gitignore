@@ -19,3 +19,5 @@ mcp-runner.mjs
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+/.opencode/tmp
+*.zip

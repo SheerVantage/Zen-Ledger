@@ -1,13 +1,29 @@
 <!-- A simple icon component that uses inline SVG icons -->
 <script lang="ts">
     import icons from '../assets/icons.json';
-    export let name = '', value='', color = 'currentColor', size = '24', strokeWidth = '1px',class_ = '';
 
-    $: icon = value || icons[name as keyof typeof icons] || '';
-    $: renderedIcon =
+    let {
+        name = '',
+        value = '',
+        color = 'currentColor',
+        size = '24',
+        strokeWidth = '1px',
+        class_ = '',
+    }: {
+        name?: string;
+        value?: string;
+        color?: string;
+        size?: string | number;
+        strokeWidth?: string;
+        class_?: string;
+    } = $props();
+
+    let icon = $derived(value || icons[name as keyof typeof icons] || '');
+    let renderedIcon = $derived(
         icon.startsWith('<svg') && strokeWidth
             ? icon.replace(/stroke-width="[^"]*"/, `stroke-width="${strokeWidth}"`)
-            : icon;
+            : icon
+    );
 </script>
 
 {#if icon}

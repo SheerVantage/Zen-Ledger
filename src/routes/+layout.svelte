@@ -10,6 +10,11 @@
     import CaptureReviewSheet from "$lib/components/CaptureReviewSheet.svelte";
     import Toast from "$lib/components/Toast.svelte";
     import Icon from "$lib/components/Icon.svelte";
+    import AuthModal from "$lib/components/AuthModal.svelte";
+    import { migrateFromLocalStorage, migrateAccountToFundId, cleanupCategoriesData } from "$lib/db/migrate";
+    import { signOut, user } from "$lib/stores/auth";
+    import { authModalTrigger } from "$lib/stores/auth-modal";
+    import { transactions } from "$lib/stores/transactions";
     import {
         submitCapture,
         commitParsedTransaction,
@@ -42,6 +47,15 @@
     }
 
     onMount(() => {
+        // Migrate localStorage data to IndexedDB on first load
+        migrateFromLocalStorage();
+        
+        // Migrate old account field to fundId
+        migrateAccountToFundId();
+        
+        // Clean up old categories data
+        cleanupCategoriesData();
+        
         if (!bottomChromeEl) return;
 
         const observer = new ResizeObserver(() => syncBottomChromeHeight());
@@ -174,8 +188,8 @@
         pendingAssessment = null;
     }
 
-    function handleNewInput(text: string, overrides?: TransactionSubmitOverrides) {
-        const result = submitCapture(text, overrides);
+    async function handleNewInput(text: string, overrides?: TransactionSubmitOverrides) {
+        const result = await submitCapture(text, overrides);
         if (result.status === "review") {
             pendingInput = result.originalText;
             pendingDraft = result.draft;
@@ -212,6 +226,10 @@
 <div class="noise-overlay text-zen-sage"></div>
 <Toast />
 
+<a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[200] focus:bg-zen-sage focus:text-zen-on-primary focus:px-4 focus:py-2 focus:rounded-lg focus:font-bold">
+    Skip to content
+</a>
+
 <!-- Global Top App Bar -->
 <header
     class="fixed top-0 left-0 right-0 z-50 bg-zen-panel/95 border-b border-zen-herb/10 shadow-zen"
@@ -239,21 +257,20 @@
 
         <!-- Utility Actions -->
         <div class="flex items-center gap-1 shrink-0">
-            <button
-                onclick={() => theme.toggle()}
-                class="h-10 w-10 bg-zen-almond/20 rounded-xl flex items-center justify-center text-zen-sage transition-all active:scale-95 shadow-sm hover:bg-zen-almond/40"
-                aria-label="Toggle Theme"
-            >
-                {#if $theme === "zen"}
-                    <Icon name="sun" size="20" strokeWidth="2" />
-                {:else}
-                    <Icon name="moon" size="20" strokeWidth="2" />
-                {/if}
-            </button>
+            {#if !$user && $transactions.length > 0}
+                <button
+                    onclick={() => authModalTrigger.update(n => n + 1)}
+                    class="h-10 px-3 bg-zen-sage/10 text-zen-sage rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-zen-sage/20 transition-all flex items-center gap-1.5"
+                >
+                    <Icon name="cloud" size={14} />
+                    <span class="hidden sm:inline">Sync</span>
+                </button>
+            {/if}
+            <AuthModal />
             <button
                 type="button"
                 onclick={toggleMenu}
-                class="lg:hidden h-10 w-10 rounded-xl flex items-center justify-center text-zen-herb hover:text-zen-sage hover:bg-zen-almond/20 transition-all active:scale-95"
+                class="lg:hidden h-12 w-12 rounded-xl flex items-center justify-center text-zen-herb hover:text-zen-sage hover:bg-zen-almond/20 transition-all active:scale-95"
                 aria-label={isMenuMounted ? "Close menu" : "Open menu"}
                 aria-expanded={isMenuOpen}
                 aria-controls="mobile-drawer"
@@ -271,11 +288,12 @@
 <!-- Mobile drawer: overflow routes not in bottom bar -->
 {#if isMenuMounted}
     <div class="mobile-drawer-root lg:hidden" class:open={isMenuOpen}>
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
             class="mobile-drawer-backdrop"
             onclick={closeMenu}
+            onkeydown={(e) => (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') && closeMenu()}
+            role="button"
+            tabindex="-1"
             aria-hidden="true"
         ></div>
         <div
@@ -328,6 +346,17 @@
                 <Icon name="settings" size="20" strokeWidth={pathname.startsWith('/settings') ? '2.5' : '2'} />
                 <span>Settings</span>
             </a>
+
+            {#if $user}
+                <p class="mobile-drawer-section">Account</p>
+                <button
+                    onclick={() => { signOut(); closeMenu(); }}
+                    class="mobile-drawer-link w-full text-left"
+                >
+                    <Icon name="logout" size="20" strokeWidth="2" />
+                    <span>Sign out</span>
+                </button>
+            {/if}
         </nav>
 
         <p class="mobile-drawer-footnote">
@@ -337,7 +366,7 @@
     </div>
 {/if}
 
-<main class="min-h-screen relative overflow-x-hidden pt-16 bottom-chrome-pad">
+<main id="main-content" class="min-h-screen relative overflow-x-hidden pt-16 bottom-chrome-pad">
     <div class="max-w-7xl mx-auto">
         {#key $page.url.pathname}
             <div in:fade={{ duration: 300, delay: 150 }} out:fade={{ duration: 150 }} class="flex-1">

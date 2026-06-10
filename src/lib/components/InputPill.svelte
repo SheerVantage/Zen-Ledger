@@ -1,6 +1,7 @@
 <script lang="ts">
     import { purposes } from "$lib/stores/purposes";
     import { parties } from "$lib/stores/parties";
+    import { funds } from "$lib/stores/funds";
     import SelectionMenu from "$lib/components/SelectionMenu.svelte";
     import AutocompleteMenu from "$lib/components/AutocompleteMenu.svelte";
     import { fade, scale, slide } from "svelte/transition";
@@ -40,8 +41,8 @@
     
     // Account & Extra Fields State
     let showExtras = $state(false);
-    let selectedAccount = $state("cash");
-    let selectedToAccount = $state("bank");
+    let selectedFund = $state("cash");
+    let selectedToFund = $state("bank");
     let parsedCategoryType = $state<string | null>(null);
     let isPassthrough = $state(false);
     let confidence = $state<'high' | 'medium' | 'low'>('medium');
@@ -85,7 +86,7 @@
         void tick().then(() => focusCaptureInput());
     });
     
-    const accountOptions = ["cash", "bank", "bkash", "nagad"];
+    const accountOptions = $derived($funds.map(f => ({ id: f.id, label: `${f.emoji} ${f.name}` })));
 
     const autocompleteOptions = $derived.by(() => {
         if (!showAutocomplete) return [];
@@ -249,7 +250,7 @@
             const { parseTransaction } = await import("$lib/utils/transactionParser");
             const parsed = parseTransaction(text);
             parsedCategoryType = $purposes.find(p => p.id === parsed.purposeId)?.accountType || 'expense';
-            selectedAccount = parsed.account || 'cash';
+            selectedFund = parsed.fundId || 'cash';
             isPassthrough = parsed.isPassthrough || false;
             
             if (parsed.confidence) confidence = parsed.confidence;
@@ -266,8 +267,9 @@
         const overrides = {
             partyId: preTaggedPartyId || undefined,
             purposeId: preTaggedPurposeId || undefined,
-            account: selectedAccount,
-            toAccount: isTransfer ? selectedToAccount : undefined,
+            fundId: selectedFund,
+            fromFundId: isTransfer ? selectedFund : undefined,
+            toFundId: isTransfer ? selectedToFund : undefined,
             isPassthrough,
             confidence: isProspect ? confidence : undefined,
             expectedDate: isProspect ? expectedDate : undefined,
@@ -407,18 +409,18 @@
         >
             <div class="flex flex-wrap items-center gap-3">
                 <span class="text-[10px] uppercase font-bold text-zen-herb opacity-60 tracking-widest px-1">
-                    {isTransfer ? 'From' : 'Account'}
+                    {isTransfer ? 'From' : 'Fund'}
                 </span>
                 <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                     {#each accountOptions as opt}
                         <button 
-                            onclick={() => selectedAccount = opt}
+                            onclick={() => selectedFund = opt.id}
                             class="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase transition-all
-                            {selectedAccount === opt 
+                            {selectedFund === opt.id 
                                 ? 'bg-zen-sage text-zen-on-primary shadow-sm' 
                                 : 'bg-zen-oat/40 text-zen-herb hover:bg-zen-almond/20'}"
                         >
-                            {opt}
+                            {opt.label}
                         </button>
                     {/each}
                 </div>
@@ -430,13 +432,13 @@
                     <div class="flex gap-1.5">
                         {#each accountOptions as opt}
                             <button 
-                                onclick={() => selectedToAccount = opt}
+                                onclick={() => selectedToFund = opt.id}
                                 class="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase transition-all
-                                {selectedToAccount === opt 
+                                {selectedToFund === opt.id 
                                     ? 'bg-zen-sage text-zen-on-primary shadow-sm' 
                                     : 'bg-zen-oat/40 text-zen-herb hover:bg-zen-almond/20'}"
                             >
-                                {opt}
+                                {opt.label}
                             </button>
                         {/each}
                     </div>

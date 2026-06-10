@@ -184,17 +184,17 @@
             {/if}
         </div>
 
-        <div class="space-y-1">
+        <ul role="list" class="space-y-1">
             {#each recentTransactions as item (item.id)}
-                <div in:fly={{ y: 16, duration: 350 }}>
+                <li in:fly={{ y: 16, duration: 350 }}>
                     <TransactionCard {item} />
-                </div>
+                </li>
             {:else}
-                <div class="py-10 flex flex-col items-center text-center opacity-70">
+                <li class="py-10 flex flex-col items-center text-center opacity-70">
                     <p class="text-zen-herb text-sm font-body font-semibold italic">Nothing logged yet today</p>
-                </div>
+                </li>
             {/each}
-        </div>
+        </ul>
     </section>
 
     <AccrualModal

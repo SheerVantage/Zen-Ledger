@@ -9,6 +9,8 @@
     import { cubicOut } from "svelte/easing";
 
     let searchQuery = $state("");
+    let debouncedSearch = $state("");
+    let searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
     let selectedCategoryId = $state("All");
     let isFilterPanelOpen = $state(false);
     let filterDateStart = $state("");
@@ -18,6 +20,14 @@
     let filterAmountMax = $state("");
     let filterToolbarEl: HTMLElement | null = $state(null);
 
+    function handleSearchInput(value: string) {
+        searchQuery = value;
+        if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+            debouncedSearch = value;
+        }, 200);
+    }
+
     const availableParties = $derived($parties);
     let usedPurposeIds = $derived(new Set($transactions.map((t) => t.purposeId)));
     const availablePurposes = $derived($purposes.filter((p) => usedPurposeIds.has(p.id)));
@@ -25,9 +35,9 @@
     const filteredTransactions = $derived.by(() => {
         let list = $transactions;
 
-        if (searchQuery) {
+        if (debouncedSearch) {
             list = list.filter((t) =>
-                t.narration.toLowerCase().includes(searchQuery.toLowerCase()),
+                t.narration.toLowerCase().includes(debouncedSearch.toLowerCase()),
             );
         }
         if (selectedCategoryId !== "All") {
@@ -146,7 +156,8 @@
                 <input
                     id="stream-search"
                     type="search"
-                    bind:value={searchQuery}
+                    value={searchQuery}
+                    oninput={(e) => handleSearchInput((e.target as HTMLInputElement).value)}
                     placeholder="Search narrations..."
                     class="stream-search flex-1 bg-zen-panel border border-zen-hairline rounded-full px-4 py-2.5 text-sm text-zen-sage placeholder:text-zen-muted-soft focus:outline-none focus:ring-2 focus:ring-zen-sage/25"
                 />
@@ -245,9 +256,11 @@
                     </div>
                     <div class="stream-date-spacer" aria-hidden="true"></div>
                     <div class="stream-date-items">
+                        <ul role="list">
                         {#each items as item (item.id)}
-                            <TransactionCard {item} />
+                            <li><TransactionCard {item} /></li>
                         {/each}
+                        </ul>
                     </div>
                 </section>
             {/each}

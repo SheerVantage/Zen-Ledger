@@ -6,12 +6,16 @@
     import { transactions } from "$lib/stores/transactions";
     import { settings } from "$lib/stores/settings";
     import { recurring, type Schedule } from "$lib/stores/recurring";
-    import { categories, type Category } from "$lib/stores/categories";
+    import { funds, type Fund } from "$lib/stores/funds";
+    import { toastMessage } from "$lib/stores/feedback";
+    import { theme } from "$lib/stores/ui";
+    import SyncButton from "$lib/components/SyncButton.svelte";
+    import Icon from "$lib/components/Icon.svelte";
 
     const settingsItems = [
         {
             title: "Purposes",
-            description: "Manage categories and account types",
+            description: "Manage what money is for",
             icon: "🏷️",
             href: "/purposes",
             color: "bg-zen-earn/10 text-zen-sage"
@@ -25,20 +29,29 @@
         }
     ];
 
-    // Category editing state
-    let editingCategoryId = $state("");
-    let editCatName = $state("");
-    let editCatEmoji = $state("");
+    // Fund editing state
+    let editingFundId = $state("");
+    let editFundName = $state("");
+    let editFundEmoji = $state("");
+    let newFundName = $state("");
+    let newFundEmoji = $state("");
 
-    function startEditCategory(cat: Category) {
-        editingCategoryId = cat.id;
-        editCatName = cat.name;
-        editCatEmoji = cat.emoji;
+    function startEditFund(fund: Fund) {
+        editingFundId = fund.id;
+        editFundName = fund.name;
+        editFundEmoji = fund.emoji;
     }
 
-    function saveCategoryEdit() {
-        categories.updateCategory(editingCategoryId as any, { name: editCatName, emoji: editCatEmoji });
-        editingCategoryId = "";
+    function saveFundEdit() {
+        funds.updateFund(editingFundId, { name: editFundName, emoji: editFundEmoji });
+        editingFundId = "";
+    }
+
+    function addFund() {
+        if (!newFundName.trim()) return;
+        funds.addFund({ name: newFundName.trim(), emoji: newFundEmoji || "💰" });
+        newFundName = "";
+        newFundEmoji = "";
     }
 
     let editName = $state($settings.profile.name);
@@ -75,12 +88,14 @@
             name: editName, 
             dailyBudget: Number(editBudget) 
         });
-        alert("Profile updated!");
+        toastMessage.set("Profile updated!");
+        setTimeout(() => toastMessage.set(null), 2400);
     }
 
     function recalculateTotals() {
         settings.recalculate(get(transactions), get(purposes));
-        alert("Financial summaries recalculated!");
+        toastMessage.set("Financial summaries recalculated!");
+        setTimeout(() => toastMessage.set(null), 2400);
     }
 
     function exportData() {
@@ -90,9 +105,9 @@
             transactions: get(transactions),
             settings: get(settings),
             recurring: get(recurring),
-            categories: get(categories),
+            funds: get(funds),
             exportDate: new Date().toISOString(),
-            version: "1.4.0"
+            version: "2.2.0"
         };
 
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -118,24 +133,25 @@
                 const data = JSON.parse(e.target?.result as string);
                 
                 if (!data.purposes || !data.parties || !data.transactions) {
-                    alert("Invalid backup file. Missing required data.");
+                    toastMessage.set("Invalid backup file. Missing required data.");
+                    setTimeout(() => toastMessage.set(null), 2400);
                     return;
                 }
 
-                if (confirm("Are you sure you want to import this data? This will overwrite all your current data.")) {
-                    purposes.importData(data.purposes);
-                    parties.importData(data.parties);
-                    transactions.importData(data.transactions);
-                    if (data.recurring) recurring.importData(data.recurring);
-                    if (data.categories) categories.importData(data.categories);
-                    if (data.settings) {
-                        settings.updateProfile(data.settings.profile);
-                    }
-                    settings.recalculate(get(transactions), get(purposes));
-                    alert("Data imported successfully!");
+                purposes.importData(data.purposes);
+                parties.importData(data.parties);
+                transactions.importData(data.transactions);
+                if (data.recurring) recurring.importData(data.recurring);
+                if (data.funds) funds.importData(data.funds);
+                if (data.settings) {
+                    settings.updateProfile(data.settings.profile);
                 }
+                settings.recalculate(get(transactions), get(purposes));
+                toastMessage.set("Data imported successfully!");
+                setTimeout(() => toastMessage.set(null), 2400);
             } catch (err) {
-                alert("Error parsing backup file.");
+                toastMessage.set("Error parsing backup file.");
+                setTimeout(() => toastMessage.set(null), 2400);
                 console.error(err);
             }
         };
@@ -207,6 +223,32 @@
             </div>
         </div>
 
+        <!-- Sync & Theme -->
+        <div class="space-y-4 pt-4" in:fly={{ y: 20, delay: 230, duration: 500 }}>
+            <h4 class="text-zen-herb text-[10px] uppercase font-bold tracking-widest px-2 opacity-50">Sync & Appearance</h4>
+            <div class="bg-zen-panel rounded-2xl p-4 shadow-sm border border-zen-herb/5 space-y-4">
+                <div class="flex items-center justify-between px-1">
+                    <span class="text-sm font-bold text-zen-sage">Sync Data</span>
+                    <SyncButton />
+                </div>
+                <div class="border-t border-zen-herb/5"></div>
+                <div class="flex items-center justify-between px-1">
+                    <span class="text-sm font-bold text-zen-sage">Theme</span>
+                    <button
+                        onclick={() => theme.toggle()}
+                        class="h-12 w-12 bg-zen-almond/20 rounded-xl flex items-center justify-center text-zen-sage transition-all active:scale-95 shadow-sm hover:bg-zen-almond/40"
+                        aria-label="Toggle Theme"
+                    >
+                        {#if $theme === "zen"}
+                            <Icon name="sun" size="20" strokeWidth="2" />
+                        {:else}
+                            <Icon name="moon" size="20" strokeWidth="2" />
+                        {/if}
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Wealth Summary -->
         <div class="space-y-4 pt-4" in:fly={{ y: 20, delay: 250, duration: 500 }}>
             <h4 class="text-zen-herb text-[10px] uppercase font-bold tracking-widest px-2 opacity-50">Wealth Audit</h4>
@@ -230,39 +272,58 @@
             </div>
         </div>
 
-        <!-- Categories Management -->
+        <!-- Funds Management -->
         <div class="space-y-4 pt-4" in:fly={{ y: 20, delay: 260, duration: 500 }}>
-            <h4 class="text-zen-herb text-[10px] uppercase font-bold tracking-widest px-2 opacity-50">Account Categories</h4>
-            <div class="bg-zen-panel rounded-2xl p-4 shadow-sm border border-zen-herb/5 space-y-2">
-                {#each $categories as cat}
+            <h4 class="text-zen-herb text-[10px] uppercase font-bold tracking-widest px-2 opacity-50">Funds</h4>
+            <div class="bg-zen-panel rounded-2xl p-4 shadow-sm border border-zen-herb/5 space-y-3">
+                <!-- Add New Fund -->
+                <div class="flex gap-2">
+                    <input
+                        bind:value={newFundEmoji}
+                        placeholder="💰"
+                        class="w-12 text-center bg-zen-oat/30 border border-zen-herb/10 rounded-lg p-1 text-lg"
+                    />
+                    <input
+                        bind:value={newFundName}
+                        placeholder="Fund name"
+                        class="flex-1 bg-zen-oat/30 border border-zen-herb/10 rounded-lg px-3 py-1 text-sm text-zen-sage"
+                        onkeydown={(e) => e.key === 'Enter' && addFund()}
+                    />
+                    <button onclick={addFund} class="px-3 bg-zen-sage text-zen-on-primary text-[10px] font-bold rounded-lg">Add</button>
+                </div>
+
+                <!-- Fund List -->
+                {#each $funds as fund (fund.id)}
                     <div class="flex items-center justify-between p-2 rounded-xl hover:bg-zen-oat/20 transition-all group">
-                        {#if editingCategoryId === cat.id}
+                        {#if editingFundId === fund.id}
                             <div class="flex gap-2 flex-1">
-                                <input bind:value={editCatEmoji} class="w-10 text-center bg-zen-oat/30 border border-zen-herb/10 rounded-lg p-1 text-lg" />
-                                <input bind:value={editCatName} class="flex-1 bg-zen-oat/30 border border-zen-herb/10 rounded-lg px-3 py-1 text-sm text-zen-sage" />
-                                <button onclick={saveCategoryEdit} class="px-3 bg-zen-sage text-zen-on-primary text-[10px] font-bold rounded-lg">Save</button>
-                                <button onclick={() => editingCategoryId = ""} class="px-3 border border-zen-herb/20 text-zen-herb text-[10px] font-bold rounded-lg">✕</button>
+                                <input bind:value={editFundEmoji} class="w-10 text-center bg-zen-oat/30 border border-zen-herb/10 rounded-lg p-1 text-lg" />
+                                <input bind:value={editFundName} class="flex-1 bg-zen-oat/30 border border-zen-herb/10 rounded-lg px-3 py-1 text-sm text-zen-sage" />
+                                <button onclick={saveFundEdit} class="px-3 bg-zen-sage text-zen-on-primary text-[10px] font-bold rounded-lg">Save</button>
+                                <button onclick={() => editingFundId = ""} class="px-3 border border-zen-herb/20 text-zen-herb text-[10px] font-bold rounded-lg">✕</button>
                             </div>
                         {:else}
                             <div class="flex items-center gap-3">
-                                <span class="text-xl">{cat.emoji}</span>
-                                <div>
-                                    <p class="text-sm font-bold text-zen-sage">{cat.name}</p>
-                                    <p class="text-[9px] text-zen-herb/50 uppercase tracking-wider">{cat.direction}</p>
-                                </div>
+                                <span class="text-xl">{fund.emoji}</span>
+                                <p class="text-sm font-bold text-zen-sage">{fund.name}</p>
                             </div>
-                            <button 
-                                onclick={() => startEditCategory(cat)} 
-                                class="text-[10px] text-zen-herb opacity-0 group-hover:opacity-60 hover:opacity-100 transition-all px-2 py-1 rounded-lg hover:bg-zen-oat/30"
-                            >
-                                Edit
-                            </button>
+                            <div class="flex items-center gap-1">
+                                <button
+                                    onclick={() => startEditFund(fund)}
+                                    class="text-[10px] text-zen-herb opacity-0 group-hover:opacity-60 hover:opacity-100 transition-all px-2 py-1 rounded-lg hover:bg-zen-oat/30"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onclick={() => funds.deleteFund(fund.id)}
+                                    class="text-[10px] text-zen-spend opacity-0 group-hover:opacity-60 hover:opacity-100 transition-all px-2 py-1 rounded-lg hover:bg-zen-spend/10"
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         {/if}
                     </div>
                 {/each}
-                <button onclick={categories.resetDefaults} class="w-full mt-2 text-[9px] uppercase font-bold text-zen-herb/40 hover:text-zen-herb/70 transition-colors tracking-widest py-1">
-                    Reset to Defaults
-                </button>
             </div>
         </div>
 
@@ -376,7 +437,7 @@
                 onclick={exportData}
                 class="w-full flex items-center gap-4 p-4 bg-zen-panel rounded-2xl shadow-sm border border-zen-herb/5 hover:shadow-zen-soft hover:scale-[1.01] transition-all group text-left"
             >
-                <div class="h-12 w-12 flex-shrink-0 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                <div class="h-12 w-12 flex-shrink-0 rounded-xl bg-zen-spend/10 text-zen-spend flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                     📤
                 </div>
                 <div class="flex-1">
@@ -389,7 +450,7 @@
                 onclick={() => fileInput.click()}
                 class="w-full flex items-center gap-4 p-4 bg-zen-panel rounded-2xl shadow-sm border border-zen-herb/5 hover:shadow-zen-soft hover:scale-[1.01] transition-all group text-left"
             >
-                <div class="h-12 w-12 flex-shrink-0 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                <div class="h-12 w-12 flex-shrink-0 rounded-xl bg-zen-earn/10 text-zen-sage flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                     📥
                 </div>
                 <div class="flex-1">

@@ -20,7 +20,7 @@ Zen Ledger is a personal finance app that replaces complex forms with conversati
 
 **Success looks like:** Logging a transaction feels effortless; reviewing history feels calm; ambiguous input gets resolved gently; summaries stay accurate without manual recalculation.
 
-**Stack:** SvelteKit 2, Svelte 5, Tailwind CSS v4, local-first localStorage stores. Version 2.0.0.
+**Stack:** SvelteKit 2, Svelte 5, Tailwind CSS v4, local-first localStorage stores. Version 2.1.0.
 
 **Living status:** See [Documents/STATUS.md](./Documents/STATUS.md) for implementation log, bugs fixed, and next steps.
 
@@ -84,14 +84,14 @@ Zen Ledger is a personal finance app that replaces complex forms with conversati
 
 ---
 
-## Implemented Features (v2.0.0 — May 2026)
+## Implemented Features (v2.1.0 — June 2026)
 
 ### Capture & parsing
 - Natural language text input via `InputPill.svelte` with **auto-focus** when FAB sheet opens
 - Rule-based parser with **`parseMeta`**: amount, relative date, party/purpose alias match, account, status, category hints
 - **`assessParseConfidence()`** gates R1–R8; **`submitCapture()`** fast path vs review path
-- **`CaptureReviewSheet`**: full field review, flagged fields, inline party/purpose create, "Back to edit"
-- `@` party and `#` purpose autocomplete; word-selection tagging
+- **`CaptureReviewSheet`**: full field review, flagged fields, inline party/purpose create, "Back to edit" (fully implemented)
+- `@` party and `#` purpose autocomplete; word-selection tagging on InputPill and TransactionCard
 - Account selector, transfer from/to, prospect type and confidence when parser detects complex types
 - Success **toast**, **card highlight pulse**, **haptic** on save
 - ~~Demo `ParserModal` ("apple" keyword)~~ **retired** from capture flow
@@ -171,9 +171,9 @@ Zen Ledger is a personal finance app that replaces complex forms with conversati
 2. User confirms or edits fields → Save transaction.
 3. Or **Back to edit** → sheet reopens with original text refocused.
 
-### Settle receivable
-1. User expands receivable card in Stream → Settle.
-2. Linked recovered transaction created; parent status updates.
+### Settle receivable/payable — loans given/taken, advances, accruals, deferred
+1. User expands receivable or payable card in Stream → Settle.
+2. Linked recovered/repaid transaction created; parent status updates.
 
 ### Edit existing transaction
 1. User expands card → Edit (capture sheet closes if open).

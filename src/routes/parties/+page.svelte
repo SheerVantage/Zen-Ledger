@@ -80,7 +80,7 @@
         <!-- List Section -->
         <section class="space-y-4">
             <h2 class="text-lg font-bold text-zen-sage">Existing Parties</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {#each $parties as p}
                     <div class="bg-zen-panel p-6 rounded-2xl border border-zen-herb/5 shadow-sm transition-all hover:border-zen-herb/20" in:fade>
                         {#if editingId === p.id}
