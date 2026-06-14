@@ -1,7 +1,8 @@
 import { addTransaction, type Transaction } from '$lib/stores/transactions';
-import { showCaptureSuccess } from '$lib/stores/feedback';
+import { showCaptureSuccess, showAutoSettlementPrompt } from '$lib/stores/feedback';
 import { parseTransaction, type ParsedTransactionDraft } from './transactionParser';
 import { assessParseConfidence, type ParseAssessment } from './parseConfidence';
+import { db } from '$lib/db/database';
 
 export interface TransactionSubmitOverrides {
     partyId?: string;
@@ -61,6 +62,51 @@ export async function commitParsedTransaction(
     if (overrides?.showToast !== false) {
         showCaptureSuccess(id);
     }
+
+    // Auto-settlement check: after saving an earning/recovered, look for open receivables from same party
+    if (overrides?.partyId || parsedFields.partyId) {
+        const savedPartyId = overrides?.partyId || parsedFields.partyId;
+        const [savedTxn, allPurposes, allParties] = await Promise.all([
+            db.transactions.get(id),
+            db.purposes.toArray(),
+            db.parties.toArray(),
+        ]);
+        if (!savedTxn) return id;
+
+        const savedPurpose = allPurposes.find(p => p.id === savedTxn.purposeId);
+        const savedAccountType = savedPurpose?.accountType || 'expense';
+
+        if (savedAccountType === 'earning' || savedAccountType === 'recovered') {
+            // Find open receivables from same party
+            const receivablePurposeIds = allPurposes
+                .filter(p => p.accountType === 'receivable')
+                .map(p => p.id);
+
+            const openReceivable = (await db.transactions.toArray()).find(t =>
+                t.id !== id &&
+                t.partyId === savedPartyId &&
+                receivablePurposeIds.includes(t.purposeId) &&
+                t.status !== 'completed'
+            );
+
+            if (openReceivable) {
+                const party = allParties.find(p => p.id === savedPartyId);
+                const partyName = party?.name || 'this party';
+                showAutoSettlementPrompt({
+                    partyName,
+                    receivableId: openReceivable.id,
+                    receivableAmount: openReceivable.amount,
+                    onSettle: () => {
+                        // settleTransaction is available via the transactions store import
+                        import('$lib/stores/transactions').then(({ settleTransaction }) => {
+                            settleTransaction(openReceivable.id);
+                        });
+                    },
+                });
+            }
+        }
+    }
+
     return id;
 }
 

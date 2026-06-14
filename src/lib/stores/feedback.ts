@@ -23,3 +23,46 @@ export function showCaptureSuccess(transactionId: string, message = 'Got it') {
     toastTimer = setTimeout(() => toastMessage.set(null), 2400);
     highlightTimer = setTimeout(() => highlightedTransactionId.set(null), 3200);
 }
+
+/** Confirmation dialog state for destructive actions. */
+export interface ConfirmState {
+    title: string;
+    message: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    variant?: 'danger' | 'default';
+    onConfirm: () => void;
+    onCancel?: () => void;
+}
+
+export const confirmDialog = writable<ConfirmState | null>(null);
+
+export function requestConfirm({
+    title,
+    message,
+    confirmLabel = 'Confirm',
+    cancelLabel = 'Cancel',
+    variant = 'default',
+    onConfirm,
+    onCancel,
+}: ConfirmState) {
+    confirmDialog.set({ title, message, confirmLabel, cancelLabel, variant, onConfirm, onCancel });
+}
+
+/** Auto-settlement prompt — shown after saving an earning/recovered that matches an open receivable. */
+export interface AutoSettlementPrompt {
+    partyName: string;
+    receivableId: string;
+    receivableAmount: number;
+    onSettle: () => void;
+}
+
+export const autoSettlementPrompt = writable<AutoSettlementPrompt | null>(null);
+
+let autoSettlementTimer: ReturnType<typeof setTimeout> | undefined;
+
+export function showAutoSettlementPrompt(prompt: AutoSettlementPrompt) {
+    autoSettlementPrompt.set(prompt);
+    if (autoSettlementTimer) clearTimeout(autoSettlementTimer);
+    autoSettlementTimer = setTimeout(() => autoSettlementPrompt.set(null), 6000);
+}
